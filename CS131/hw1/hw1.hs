@@ -66,11 +66,9 @@ is_odd'' x = is_even'' (x - 1)
 -------------------------------------------------------------------------------
 
 -- Problem 5
-count_occurrences :: [Integer] -> [Integer] -> Integer
+count_occurrences :: (Eq a) => [a] -> [a] -> Integer
 count_occurrences [] a2 = 1
 count_occurrences a1 [] = 0
 count_occurrences (x : xs) (y : ys)
     | x == y    = (count_occurrences xs ys) + (count_occurrences (x : xs) ys)
     | otherwise = count_occurrences (x : xs) ys
-
-
