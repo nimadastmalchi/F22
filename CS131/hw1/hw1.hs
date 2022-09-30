@@ -33,7 +33,7 @@ perfect_numbers = [x | x <- [1..], x == (sum $ init $ all_factors x)]
 -------------------------------------------------------------------------------
 
 -- Problem 4
--- version 1 - mutual recursion
+-- version 1 - if/else statement
 is_even :: Integer -> Bool
 is_even x = if x == 0
             then True
