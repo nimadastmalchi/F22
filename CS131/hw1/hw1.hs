@@ -37,13 +37,13 @@ perfect_numbers = [x | x <- [1..], x == (sum $ init $ all_factors x)]
 -- version 0 - if/else statement
 is_even :: Integer -> Bool
 is_even x = if x == 0
-            then True
-            else is_odd (x - 1)
+                then True
+                else is_odd (x - 1)
 
 is_odd :: Integer -> Bool
 is_odd x = if x == 0
-           then False
-           else is_even (x - 1)
+               then False
+               else is_even (x - 1)
 
 -- version 0 - guards
 is_even' :: Integer -> Bool
