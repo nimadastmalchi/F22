@@ -9,8 +9,8 @@ module HW1 where
 -- Problem 1
 largest :: String -> String -> String
 largest str1 str2 = if (length str1) >= (length str2)
-                    then str1
-                    else str2
+                        then str1
+                        else str2
 
 -------------------------------------------------------------------------------
 
@@ -51,6 +51,7 @@ is_even' x
     | x == 0    = True
     | otherwise = is_odd' (x - 1)
 
+is_odd' :: Integer -> Bool
 is_odd' x
     | x == 0    = False
     | otherwise = is_even' (x - 1)
