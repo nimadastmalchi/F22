@@ -76,5 +76,30 @@ ll_contains (ListNode x xs) target = if x == target
 
 -- problem 8b
 longest_run :: [Bool] -> Int
-longest_run lst = 
+longest_run lst = snd $ foldr
+    (\x acc -> let cur = fst acc
+                   ans = snd acc
+                in
+                   if x then (cur+1, max (cur+1) ans)
+                        else (0, ans)) (0, 0) lst
+
+
+
+-- problem 8d
+data Tree = Empty | Node Integer [Tree]
+max_tree_value :: Tree -> Integer
+max_tree_value Empty = 0
+max_tree_value (Node val []) = val
+max_tree_value (Node val children) =
+    max val
+        (foldr (\x acc -> max acc (max_tree_value x))
+               0
+               children)
+
+
+-- problem 9
+fib_array = 1 : 1 : zipWith (+) fib_array (tail fib_array)
+fibonacci x = take x fib_array
+
+-- problem 10
 

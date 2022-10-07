@@ -2,6 +2,7 @@
 #include <assert.h>
 #include <vector>
 
+// problem 8a
 std::size_t longestRun(std::vector<bool> v) {
     std::size_t ans = 0, cur = 0;
     for (const bool elem : v) {
@@ -14,6 +15,7 @@ std::size_t longestRun(std::vector<bool> v) {
     }
     return ans;
 }
+
 
 int main() {
     std::vector<bool> v;
