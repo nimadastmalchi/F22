@@ -102,4 +102,22 @@ fib_array = 1 : 1 : zipWith (+) fib_array (tail fib_array)
 fibonacci x = take x fib_array
 
 -- problem 10
+data Event = Travel Integer | Fight Integer | Heal Integer
+
+process_event :: Event -> Integer -> Integer
+process_event (Travel dist) health
+    | health <= 40 = health
+    | otherwise    = process_event (Heal (div dist 4)) health
+process_event (Fight hitpts) health
+    | health <= 40 = health - (div hitpts 2)
+    | otherwise    = health - hitpts
+process_event (Heal amt) health = min (health + amt) 100
+
+super_giuseppe :: [Event] -> Integer
+super_giuseppe events = (foldl
+                           (\acc e -> if acc <= 0
+                                        then -1
+                                        else process_event e acc)
+                           100
+                           events)
 
