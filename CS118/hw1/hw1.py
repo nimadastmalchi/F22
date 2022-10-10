@@ -21,11 +21,10 @@ P = 0
 t = 0.5
 while t < 11:
     SampleSignal = f(t)
-    print("Time:", t, "lag", lag)
+    print('t =', round(t, 2), ',', 'P =', round(P, 2), 'lag =',  round(lag, 2))
     P = P + T + lag
     t += T + lag
     if tran_ind < len(transitions) and t > transitions[tran_ind]:
-        print('transition detected at t =', t)
         A = transitions[tran_ind]
         tran_ind += 1
         lag = A - P
