@@ -1,6 +1,11 @@
 -- problem 1a
+-- Using partial application:
 scale_nums :: [Integer] -> Integer -> [Integer]
 scale_nums lst factor = map (* factor) lst
+
+-- Using lambda closure:
+scale_nums' :: [Integer] -> Integer -> [Integer]
+scale_nums' lst factor = map (\x -> factor * x) lst
 
 -- problem 1b
 only_odds :: [[Integer]] -> [[Integer]]
@@ -36,32 +41,47 @@ foo :: Integer -> (Integer -> (Integer -> ((Integer -> a) -> [a])))
 foo x = \y -> (\z -> (\t -> map t [x,x+z..y]))
 foo' x y z t = map t [x,x+z..y]
 
-{-
 -- problem 6a
-data InstagramUser = Influencer | Normie
+-- data InstagramUser = Influencer | Normie
 
 -- problem 6b
-lit_collab :: InstagramUser -> InstagramUser -> Bool
-lit_collab Influencer Influencer = True
-lit_collab _ _ = False
---}
+-- lit_collab :: InstagramUser -> InstagramUser -> Bool
+-- lit_collab Influencer Influencer = True
+-- lit_collab _ _ = False
 
-{-
 -- problem 6c
-data InstagramUser = Influencer [String] | Normie
+-- data InstagramUser = Influencer [String] | Normie
 
 -- problem 6d
-is_sponsor :: InstagramUser' -> String -> Bool
-is_sponsor (Influencer lst) sponsor = elem sponsor lst
-is_sponsor _ _ = False
---}
+-- is_sponsor :: InstagramUser -> String -> Bool
+
+-- -- If InstagramUser is Influencer, then return true if sponsor is in the user's sponsor list:
+-- is_sponsor (Influencer lst) sponsor = elem sponsor lst
+-- -- If InstagramUser is anything else, return False:
+-- is_sponsor _ _ = False
 
 -- problem 6e
-data InstagramUser = Influencer [String] [InstagramUser] | Normie
+data InstagramUser =
+    Influencer
+        [String]        -- sponsorships
+        [InstagramUser] -- followers
+  | Normie
 
 -- problem 6f
+-- helper function:
+-- return True if InstagramUser is Influencer, False otherwise
+is_influencer :: InstagramUser -> Bool
+is_influencer (Influencer _ _) = True
+is_influencer _ = False
+
 count_influencers :: InstagramUser -> Integer
-count_influencers (Influencer _ followers) = toInteger $ length followers
+-- If InstagramUser is Influencer, filter out all of its non-influencer followers and
+-- return the length:
+count_influencers (Influencer _ followers) =
+    toInteger $
+    length $
+    filter is_influencer followers
+-- If InstagramUser is anything else, return 0:
 count_influencers _ = 0
 
 -- problem 7a
@@ -73,6 +93,17 @@ ll_contains EmptyList _ = False
 ll_contains (ListNode x xs) target = if x == target
                                         then True
                                         else ll_contains xs target
+
+-- problem 7b
+-- parameters: index, new value, linked list
+-- returns: new linked list with the inserted value
+ll_insert :: Int -> Integer -> LinkedList -> LinkedList
+
+-- problem 7c
+ll_insert _ val EmptyList = ListNode val EmptyList
+ll_insert ind val (ListNode x xs)
+    | ind <= 0  = ListNode val (ListNode x xs)
+    | otherwise = ListNode x (ll_insert (ind-1) val xs)
 
 -- problem 8b
 longest_run :: [Bool] -> Int
