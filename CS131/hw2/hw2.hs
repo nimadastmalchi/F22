@@ -102,7 +102,10 @@ ll_insert :: Int -> Integer -> LinkedList -> LinkedList
 -- problem 7c
 ll_insert _ val EmptyList = ListNode val EmptyList
 ll_insert ind val (ListNode x xs)
+    -- Create a new node pointing to the original list:
     | ind <= 0  = ListNode val (ListNode x xs)
+    -- Create a new node pointing to a new list (with val inserted at the
+    -- appropriate index):
     | otherwise = ListNode x (ll_insert (ind-1) val xs)
 
 -- problem 8b
@@ -121,6 +124,7 @@ data Tree = Empty | Node Integer [Tree]
 max_tree_value :: Tree -> Integer
 max_tree_value Empty = 0
 max_tree_value (Node val []) = val
+-- return max(val, max_tree_value(all children subtrees))
 max_tree_value (Node val children) =
     max val
         (foldr (\x acc -> max acc (max_tree_value x))
@@ -129,22 +133,36 @@ max_tree_value (Node val children) =
 
 
 -- problem 9
+-- Create an infinite list of the fibonacci numbers:
+fib_array :: [Integer]
 fib_array = 1 : 1 : zipWith (+) fib_array (tail fib_array)
+
+-- Take x elements from the infinite list:
+fibonacci :: Int -> [Integer]
 fibonacci x = take x fib_array
 
 -- problem 10
 data Event = Travel Integer | Fight Integer | Heal Integer
 
+-- process_event takes as input the event and the current health and returns
+-- the new health
 process_event :: Event -> Integer -> Integer
+-- Case 1 (travel): heal dist/4 points iff health > 40
 process_event (Travel dist) health
     | health <= 40 = health
     | otherwise    = process_event (Heal (div dist 4)) health
+-- Case 2 (fight): if in defensive mode, lose hitpts/2 health points. Otherwise,
+-- lose hitpts health points.
 process_event (Fight hitpts) health
     | health <= 40 = health - (div hitpts 2)
     | otherwise    = health - hitpts
+-- Case 3 (heal): gain health by amt. Note that the health cannot exceed 100.
 process_event (Heal amt) health = min (health + amt) 100
 
 super_giuseppe :: [Event] -> Integer
+-- Accumulate the final health by processing each event (left to right) and
+-- updating the accumulator value (the current health). If at any point the
+-- accumulator reaches -1, then it's Game Over. 
 super_giuseppe events = (foldl
                            (\acc e -> if acc <= 0
                                         then -1

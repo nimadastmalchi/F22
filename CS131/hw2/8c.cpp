@@ -22,16 +22,19 @@ unsigned maxTreeValue(Tree *root) {
     }
     unsigned ans = 0;
 
+    // iterate through all nodes via DFS
     stack<Tree *> process;
     process.push(root);
     while (!process.empty()) {
         Tree *cur = process.top();
         process.pop();
 
+        // update the answer if a greater value is encountered
         if (cur->value > ans) {
             ans = cur->value;
         }
 
+        // add all child nodes to the stack
         for (auto *ptr : cur->children) {
             if (ptr != nullptr) {
                 process.push(ptr);
