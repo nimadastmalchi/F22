@@ -1,3 +1,7 @@
+# Nima Amir Dastmalchi (505320372)
+# UCLA CS 131 Project 1
+# Brewin Interpreter
+
 from intbase import InterpreterBase, ErrorType
 import operator
 
