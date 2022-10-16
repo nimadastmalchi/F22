@@ -11,11 +11,24 @@ from interpreterv1 import Interpreter, Function
 #                 "+ 1 2 # comment"])
 interpreter = Interpreter()
 interpreter.run(["func main",
-                  "  assign x 1",
+                  "  assign x - * 3 + 3 7 / * 4 2 2",
+                  "  while > x 0",
+                  "    assign x - x 1",
+                  "  endwhile",
+                  "  assign y 10",
                   "endfunc",
                   "func hello",
-                  "  assign x 2",
+                  '  funccall print "this is a string"',
                   "endfunc"])
+
+# tokens = interpreter.tokenize(["+ - 20 * 3 4 1 1h",
+#                 "- * 3 + 3 7 / * 4 2 2",
+#                 "32",
+#                 '"this is a string"',
+#                 "-32",
+#                 "& > 6 5 <= 3 3",
+#                 "+ 1 2 # comment"])
+# print(interpreter.eval_prefix_expr(tokens[0].tokenized_line))
 
 # assert(interpreter.eval_prefix_expr("+ - 20 * 3 4 1") == 9)
 # assert(interpreter.eval_prefix_expr("- * 3 + 3 7 / * 4 2 2") == 26)
