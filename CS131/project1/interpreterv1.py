@@ -171,9 +171,10 @@ class Interpreter(InterpreterBase):
                   self.tokenized_program[end_line].tokenized_line[0] == InterpreterBase.WHILE_DEF:
                 end_line += 1
             # evaluate the while loop
+            print(start_line, end_line)
             while self.eval_prefix_expr(line[1:]):
+                self.ip += 1 # skip the "while" statement
                 while self.ip != end_line:
-                    self.ip += 1
                     # recursively interpret each line
                     self.interpret()
                 self.ip = start_line
