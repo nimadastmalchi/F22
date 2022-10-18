@@ -154,7 +154,7 @@ class Interpreter(InterpreterBase):
         line = self.tokenized_program[self.ip].tokenized_line
         cur_indent = self.tokenized_program[self.ip].indent
         if line == "" or\
-           line[0] in [InterpreterBase.ENDFUNC_DEF, InterpreterBase.ENDWHILE_DEF]:
+           line[0] in [InterpreterBase.ENDFUNC_DEF, InterpreterBase.ENDWHILE_DEF, InterpreterBase.ENDIF_DEF]:
             pass
         elif line[0] == InterpreterBase.ASSIGN_DEF:
             var_name = line[1]
@@ -188,7 +188,6 @@ class Interpreter(InterpreterBase):
                     ErrorType.SYNTAX_ERROR,\
                     description='Expected "endwhile" after "while"',\
                     line_num=end_line)
-            print(start_line, end_line)
             # evaluate the while loop
             while self.eval_prefix_expr(line[1:]):
                 self.ip += 1 # skip the "while" statement
@@ -219,7 +218,46 @@ class Interpreter(InterpreterBase):
                     description='Expected expression after "if"',\
                     line_num=self.ip\
                 )
-            # TODO
+            # find endif (and else) lines
+            i = self.ip + 1
+            else_line = None
+            end_if_line = None
+            while True:
+                cur_line = self.tokenized_program[i].tokenized_line
+                if len(cur_line) > 0:
+                    if self.tokenized_program[i].indent == cur_indent:
+                        if cur_line[0] == InterpreterBase.ELSE_DEF:
+                            if else_line is not None:
+                                super().error(\
+                                    ErrorType.SYNTAX_ERROR,\
+                                    description='Unexpected "else"',\
+                                    line_num=i\
+                                )
+                            else_line = i
+                        elif cur_line[0] == InterpreterBase.ENDIF_DEF:
+                            end_if_line = i
+                            break
+                i += 1
+            
+            # evaluate the if expression
+            if_expr_value = self.eval_prefix_expr(line[1:])
+            if_expr_type = type(if_expr_value)
+            if if_expr_type is not bool:
+                super().error(\
+                    ErrorType.TYPE_ERROR,\
+                    description="Expecting boolean expression in if statement",\
+                    line_num=self.ip
+                    )
+            if if_expr_value:
+                end_line = else_line if else_line is not None else end_if_line
+                self.ip += 1
+                while self.ip != end_line:
+                    self.interpret()
+            elif else_line is not None:
+                self.ip = else_line + 1
+                while self.ip != end_if_line:
+                    self.interpret()
+            self.ip = end_if_line
         else:
             # TODO error name
             super().error(ErrorType.SYNTAX_ERROR,
