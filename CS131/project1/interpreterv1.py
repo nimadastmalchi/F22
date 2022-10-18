@@ -2,6 +2,7 @@
 # UCLA CS 131 Project 1
 # Brewin Interpreter
 
+from configparser import InterpolationError
 from intbase import InterpreterBase, ErrorType
 import operator
 
@@ -80,7 +81,7 @@ class Line:
             if token[0] == '"':
                 # string literal
                 if token[-1] != '"':
-                    InterpreterBase.error(ErrorType.TYPE_ERROR,
+                    super().error(ErrorType.TYPE_ERROR,
                                           f"Invalid string literal: {token}")
                 token = token[1:-1]
             elif is_int(token):
@@ -123,7 +124,7 @@ class Interpreter(InterpreterBase):
         self.add_funcs_to_global()
         if "main" not in self.globals:
             # TODO figure out error type
-            InterpreterBase.error(ErrorType.TYPE_ERROR,
+            super().error(ErrorType.TYPE_ERROR,
                                   'Could not find "main" function')
         self.ip = self.globals["main"].start_line + 1
         # continue interpreting until we reach end of main
@@ -149,8 +150,9 @@ class Interpreter(InterpreterBase):
                 self.globals[func_name] = Function(i, j)
 
     def interpret(self):
+        print(self.tokenized_program[self.ip].line_str)
         line = self.tokenized_program[self.ip].tokenized_line
-        print(line)
+        cur_indent = self.tokenized_program[self.ip].indent
         if line == "" or\
            line[0] in [InterpreterBase.ENDFUNC_DEF, InterpreterBase.ENDWHILE_DEF]:
             pass
@@ -163,19 +165,31 @@ class Interpreter(InterpreterBase):
             func = self.globals[func_name]
             if type(func) is not Function:
                 # TODO check error type
-                InterpreterBase.error(ErrorType.NAME_ERROR,
+                super().error(ErrorType.NAME_ERROR,
                                     f"{func_name} is not a function")
-            # TODO execute the function
+            # store current line in lr before function call:
+            lr = self.ip
+            # evaluate the function:
+            self.ip = func.start_line + 1
+            while self.ip != func.end_line:
+                self.interpret()
+            # set self.ip to address to return to:
+            self.ip = lr
         elif line[0] == InterpreterBase.WHILE_DEF:
             # store start and end lines of the while block
             start_line = self.ip
             end_line = self.ip + 1
-            cur_indent = self.tokenized_program[self.ip].indent
-            while self.tokenized_program[end_line].indent != cur_indent or\
-                  self.tokenized_program[end_line].tokenized_line[0] == InterpreterBase.WHILE_DEF:
+            while self.tokenized_program[end_line].indent != cur_indent:
                 end_line += 1
-            # evaluate the while loop
+            tokenized_end_line = self.tokenized_program[end_line].tokenized_line
+            if len(tokenized_end_line) != 1 or\
+               tokenized_end_line[0] != InterpreterBase.ENDWHILE_DEF:
+                super().error(\
+                    ErrorType.SYNTAX_ERROR,\
+                    description='Expected "endwhile" after "while"',\
+                    line_num=end_line)
             print(start_line, end_line)
+            # evaluate the while loop
             while self.eval_prefix_expr(line[1:]):
                 self.ip += 1 # skip the "while" statement
                 while self.ip != end_line:
@@ -183,9 +197,32 @@ class Interpreter(InterpreterBase):
                     self.interpret()
                 self.ip = start_line
             self.ip = end_line
+        elif line[0] == InterpreterBase.RETURN_DEF:
+            if len(line) > 1:
+                # Evaluate the expression being returned and set it to the
+                # "result" global variable:
+                return_val = self.eval_prefix_expr(line[1:])
+                self.globals[InterpreterBase.RESULT_DEF] = return_val
+                # set ip to the "endfunc" line
+                # TODO we already store end_line, so use it from the Function struct somehow
+                end_line = self.ip + 1
+                # no nested functions, so we can safely look for next endfunc
+                while len(self.tokenized_program[end_line].tokenized_line) == 0 or\
+                      self.tokenized_program[end_line].tokenized_line[0] != InterpreterBase.ENDFUNC_DEF:
+                    end_line += 1
+                self.ip = end_line
+                return
+        elif line[0] == InterpreterBase.IF_DEF:
+            if len(line) <= 1:
+                super().error(\
+                    ErrorType.SYNTAX_ERROR,\
+                    description='Expected expression after "if"',\
+                    line_num=self.ip\
+                )
+            # TODO
         else:
             # TODO error name
-            InterpreterBase.error(ErrorType.SYNTAX_ERROR,
+            super().error(ErrorType.SYNTAX_ERROR,
                                   f"Unkown line")
         self.ip += 1
 
@@ -202,11 +239,11 @@ class Interpreter(InterpreterBase):
                 operand2 = stack.pop()
                 type1, type2 = type(operand1), type(operand2)
                 if type1 != type2:
-                    InterpreterBase.error(
+                    super().error(
                         ErrorType.TYPE_ERROR,
                         f"Expression contains operands of different types: {type1} and {type2}")
                 if op not in SUPPROTED_OPERATORS[type1]:
-                    Interpreter.error(
+                    super().error(
                         ErrorType.TYPE_ERROR,
                         f"Unsupported operator {op} for the operand type {type1}"
                     )
@@ -214,12 +251,12 @@ class Interpreter(InterpreterBase):
             else:
                 # a variable
                 if op not in self.globals:
-                    InterpreterBase.error(ErrorType.NAME_ERROR,
+                    super().error(ErrorType.NAME_ERROR,
                                           f"Undefined variable {op}")
                 else:
                     stack.append(self.globals[op])
         if len(stack) != 1:
-            InterpreterBase.error(
+            super().error(
                 ErrorType.SYNTAX_ERROR,
                 f"Invalid prefix expression {expr}"
             )

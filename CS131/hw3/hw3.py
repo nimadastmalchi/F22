@@ -46,6 +46,24 @@ def largest_sum(nums, k):
             max_sum = sum
     return max_sum
 
+# problem 7b
+def largest_sum_v2(nums, k):
+    if k < 0 or k > len(nums):
+        raise ValueError
+    elif k == 0:
+        return 0
+
+    sum = 0
+    for num in nums[:k]:    # compute sum of first k elements
+        sum += num
+
+    max_sum = sum
+    for i in range(0, len(nums)-k): # changed len(nums)-k-1 to len(nums)-k
+        sum -= nums[i]      # exclude first element in window
+        sum += nums[i+k]    # add next element to window
+        max_sum = max(sum, max_sum)
+    return max_sum
+
 # probelm 8a
 class Event:
     def __init__(self, start_time, end_time):

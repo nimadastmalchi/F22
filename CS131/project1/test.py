@@ -17,12 +17,16 @@ interpreter.run(["func main",
                   "    assign z 10",
                   "    while > z 0",
                   "       assign z - z 1",
-                  "    endwhile"
+                  "    endwhile",
                   "  endwhile",
                   "  assign y 10",
+                  "  funccall hello",
+                  "  if",
                   "endfunc",
                   "func hello",
-                  '  funccall print "this is a string"',
+                  '  assign a 20',
+                  "  return + a 30",
+                  "  assign b 10",
                   "endfunc"])
 
 # tokens = interpreter.tokenize(["+ - 20 * 3 4 1 1h",
