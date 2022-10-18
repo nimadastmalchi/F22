@@ -43,10 +43,10 @@ class Literal:
         self.val = val
     
     def __str__(self):
-        return f"{self.val}"
+        return f"{self.val} (literal)"
     
     def __repr__(self) -> str:
-        return f"{self.val}"
+        return f"{self.val} (literal)"
 
 # represents one line of the program
 class Line:
@@ -81,9 +81,10 @@ class Line:
             if token[0] == '"':
                 # string literal
                 if token[-1] != '"':
-                    super().error(ErrorType.TYPE_ERROR,
-                                          f"Invalid string literal: {token}")
-                token = token[1:-1]
+                    super().error(ErrorType.TYPE_ERROR,\
+                                  description=f"Invalid string literal: {token}",\
+                                  line_num=self.ip)
+                token = Literal(token[1:-1])
             elif is_int(token):
                 # int literal
                 token = Literal(int(token))
@@ -118,19 +119,24 @@ class Interpreter(InterpreterBase):
         self.globals = {}
         self.tokenized_program = []
 
+        # set this flag to true when return line is
+        # interpreted. This will cause future instructions
+        # to be no-ops
+        self.current_func_terminated = False
+
     def run(self, program):
         self.reset() # reset the state
         self.tokenize(program)
         self.add_funcs_to_global()
         if "main" not in self.globals:
             # TODO figure out error type
-            super().error(ErrorType.TYPE_ERROR,
-                                  'Could not find "main" function')
+            super().error(ErrorType.SYNTAX_ERROR,\
+                          description='Could not find "main" function')
         self.ip = self.globals["main"].start_line + 1
         # continue interpreting until we reach end of main
         while self.ip != self.globals["main"].end_line:
             self.interpret()
-        print(self.globals)
+        #print(self.globals)
 
     def tokenize(self, program):
         self.tokenized_program = []
@@ -141,7 +147,8 @@ class Interpreter(InterpreterBase):
         assert self.tokenized_program is not None,\
                "call tokenize() before add_funcs_to_global()"
         for i, line in enumerate(self.tokenized_program):
-            if line.tokenized_line[0] == InterpreterBase.FUNC_DEF:
+            if len(line.tokenized_line) > 0 and\
+               line.tokenized_line[0] == InterpreterBase.FUNC_DEF:
                 func_name = line.tokenized_line[1]
                 j = i + 1
                 while len(self.tokenized_program[j].tokenized_line) == 0 or\
@@ -150,10 +157,12 @@ class Interpreter(InterpreterBase):
                 self.globals[func_name] = Function(i, j)
 
     def interpret(self):
-        print(self.tokenized_program[self.ip].line_str)
+        #print(str(self.ip) + ":", self.tokenized_program[self.ip].line_str)
         line = self.tokenized_program[self.ip].tokenized_line
         cur_indent = self.tokenized_program[self.ip].indent
-        if line == "" or\
+        if self.current_func_terminated:
+            pass
+        elif line == "" or\
            line[0] in [InterpreterBase.ENDFUNC_DEF, InterpreterBase.ENDWHILE_DEF, InterpreterBase.ENDIF_DEF]:
             pass
         elif line[0] == InterpreterBase.ASSIGN_DEF:
@@ -175,6 +184,7 @@ class Interpreter(InterpreterBase):
                 self.interpret()
             # set self.ip to address to return to:
             self.ip = lr
+            self.current_func_terminated = False
         elif line[0] == InterpreterBase.WHILE_DEF:
             # store start and end lines of the while block
             start_line = self.ip
@@ -202,15 +212,8 @@ class Interpreter(InterpreterBase):
                 # "result" global variable:
                 return_val = self.eval_prefix_expr(line[1:])
                 self.globals[InterpreterBase.RESULT_DEF] = return_val
-                # set ip to the "endfunc" line
-                # TODO we already store end_line, so use it from the Function struct somehow
-                end_line = self.ip + 1
-                # no nested functions, so we can safely look for next endfunc
-                while len(self.tokenized_program[end_line].tokenized_line) == 0 or\
-                      self.tokenized_program[end_line].tokenized_line[0] != InterpreterBase.ENDFUNC_DEF:
-                    end_line += 1
-                self.ip = end_line
-                return
+            self.current_func_terminated = True
+            return
         elif line[0] == InterpreterBase.IF_DEF:
             if len(line) <= 1:
                 super().error(\
@@ -259,9 +262,9 @@ class Interpreter(InterpreterBase):
                     self.interpret()
             self.ip = end_if_line
         else:
-            # TODO error name
-            super().error(ErrorType.SYNTAX_ERROR,
-                                  f"Unkown line")
+            super().error(ErrorType.SYNTAX_ERROR,\
+                          description="Unkown line",
+                          line_num=self.ip)
         self.ip += 1
 
     # @param expr - a list of tokens that represent the expression
@@ -278,8 +281,9 @@ class Interpreter(InterpreterBase):
                 type1, type2 = type(operand1), type(operand2)
                 if type1 != type2:
                     super().error(
-                        ErrorType.TYPE_ERROR,
-                        f"Expression contains operands of different types: {type1} and {type2}")
+                        ErrorType.TYPE_ERROR,\
+                        description=f"Expression contains operands of different types: {type1} and {type2}",\
+                        line_num=self.ip)
                 if op not in SUPPROTED_OPERATORS[type1]:
                     super().error(
                         ErrorType.TYPE_ERROR,
@@ -289,8 +293,9 @@ class Interpreter(InterpreterBase):
             else:
                 # a variable
                 if op not in self.globals:
-                    super().error(ErrorType.NAME_ERROR,
-                                          f"Undefined variable {op}")
+                    super().error(ErrorType.NAME_ERROR,\
+                                  description=f"Undefined variable {op}",\
+                                  line_num=self.ip)
                 else:
                     stack.append(self.globals[op])
         if len(stack) != 1:
