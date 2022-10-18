@@ -28,10 +28,17 @@ interpreter = Interpreter()
 #     ]
 # )
 
+# strtoint test
 interpreter.run(["func main",
-                  "  assign n 4",
-                  '  assign result "a"',
+                  '  assign v1 20',
+                  '  funccall print v1',
                   "endfunc"])
+
+# interpreter.run(["func main",
+#                   '  assign x "please"',
+#                   '  funccall input "Enter your name " x ":"',
+#                   '  funccall print "Hello, " result',
+#                   "endfunc"])
 
 # interpreter.run(["func main",
 #                   "  assign x - * 3 + 3 7 / * 4 2 2",

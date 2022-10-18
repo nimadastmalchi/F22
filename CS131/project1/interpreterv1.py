@@ -136,7 +136,6 @@ class Interpreter(InterpreterBase):
         # continue interpreting until we reach end of main
         while self.ip != self.globals["main"].end_line:
             self.interpret()
-        #print(self.globals)
 
     def tokenize(self, program):
         self.tokenized_program = []
@@ -162,7 +161,7 @@ class Interpreter(InterpreterBase):
         cur_indent = self.tokenized_program[self.ip].indent
         if self.current_func_terminated:
             pass
-        elif line == "" or\
+        elif len(line) == 0 or\
            line[0] in [InterpreterBase.ENDFUNC_DEF, InterpreterBase.ENDWHILE_DEF, InterpreterBase.ENDIF_DEF]:
             pass
         elif line[0] == InterpreterBase.ASSIGN_DEF:
@@ -171,20 +170,27 @@ class Interpreter(InterpreterBase):
             self.globals[var_name] = var_value
         elif line[0] == InterpreterBase.FUNCCALL_DEF:
             func_name = line[1]
-            func = self.globals[func_name]
-            if type(func) is not Function:
-                # TODO check error type
-                super().error(ErrorType.NAME_ERROR,
-                                    f"{func_name} is not a function")
-            # store current line in lr before function call:
-            lr = self.ip
-            # evaluate the function:
-            self.ip = func.start_line + 1
-            while self.ip != func.end_line:
-                self.interpret()
-            # set self.ip to address to return to:
-            self.ip = lr
-            self.current_func_terminated = False
+            if func_name == InterpreterBase.INPUT_DEF:
+                self.built_in_input(line[2:])
+            elif func_name == InterpreterBase.PRINT_DEF:
+                self.built_in_print(line[2:])
+            elif func_name == InterpreterBase.STRTOINT_DEF:
+                self.built_in_strtoint(line[2:])
+            else:
+                func = self.globals[func_name]
+                if type(func) is not Function:
+                    # TODO check error type
+                    super().error(ErrorType.NAME_ERROR,
+                                        f"{func_name} is not a function")
+                # store current line in lr before function call:
+                lr = self.ip
+                # evaluate the function:
+                self.ip = func.start_line + 1
+                while self.ip != func.end_line:
+                    self.interpret()
+                # set self.ip to address to return to:
+                self.ip = lr
+                self.current_func_terminated = False
         elif line[0] == InterpreterBase.WHILE_DEF:
             # store start and end lines of the while block
             start_line = self.ip
@@ -306,8 +312,69 @@ class Interpreter(InterpreterBase):
         return stack[0]
 
     def reset(self):
+        super().reset()
         self.tokenized_program = []
         self.globals = {}
+
+    def built_in_input(self, args):
+        concat_string = ""
+        for arg in args:
+            if type(arg) is Literal and type(arg.val) is str:
+                concat_string += arg.val
+            elif arg in self.globals and type(self.globals[arg]) is str:
+                concat_string += self.globals[arg]
+            else:
+                # TODO check
+                super().error(ErrorType.SYNTAX_ERROR,\
+                              description='Invalid argument(s) to function "input"',\
+                              line_num=self.ip)
+        super().output(concat_string)
+        self.globals[InterpreterBase.RESULT_DEF] = super().get_input()
+
+    def built_in_print(self, args):
+        concat_string = ""
+        for arg in args:
+            if type(arg) is Literal:
+                concat_string += str(arg.val)
+            elif arg in self.globals:
+                concat_string += str(self.globals[arg])
+            else:
+                # TODO check
+                # TODO do a NAME_ERROR if arg is an undefined variable
+                super().error(ErrorType.SYNTAX_ERROR,\
+                              description='Invalid argument(s) to function "print"',\
+                              line_num=self.ip)
+        super().output(concat_string)
+
+    def built_in_strtoint(self, args):
+        if len(args) != 1:
+            super().error(\
+                ErrorType.SYNTAX_ERROR,\
+                description=f'Expected 1 argument to "strtoint" but got {len(args)}',
+                line_num=self.ip)
+        val = None
+        if type(args[0]) is Literal:
+            if type(args[0].val) is not str:
+                super().error(\
+                    ErrorType.TYPE_ERROR,\
+                    description=f'Expected a string literal but got a non-string literal as argument to "strtoint"',\
+                    line_num=self.ip)
+            val = args[0].val
+        elif args[0] in self.globals:
+            val = self.globals[args[0]]
+        else:
+            super().error(\
+                ErrorType.NAME_ERROR,\
+                description=f"Undefined variable {args[0]}",\
+                line_num=self.ip)
+        try:
+            converted_int = int(val)
+            self.globals[InterpreterBase.RESULT_DEF] = converted_int
+        except:
+            super().error(\
+                ErrorType.TYPE_ERROR,\
+                description=f'Provided string "{val}" cannot be converted to int',\
+                line_num=self.ip)
 
 # @return True iff str represents an int
 def is_int(str):
