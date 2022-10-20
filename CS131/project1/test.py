@@ -1,5 +1,8 @@
 from re import A
-from interpreterv1 import Interpreter, Function
+from interpreterv1 import Interpreter
+from tokenizer import tokenize
+
+
 
 # interpreter = Interpreter()
 # interpreter.run(["+ - 20 * 3 4 1",
@@ -10,10 +13,70 @@ from interpreterv1 import Interpreter, Function
 #                 "& > 6 5 <= 3 3",
 #                 "+ 1 2 # comment"])
 interpreter = Interpreter()
+globals = {}
+# print(tokenize(
+#     globals,
+#     ["func main",
+#      "  assign n 5",
+#      '  assign f 1 "hello"',
+#      "  funccall fact",
+#      "endfunc",
+#      "func fact",
+#      "  if == n 0",
+#      "    return f", # bug: if expression will execute until self.ip gets to endif. return will put self.ip to endfunc. So, self.ip increments to after length of program
+#      "  endif",
+#      "  assign f * f n",
+#      "  assign n - n 1",
+#      "  funccall fact",
+#      "  return result",
+#      "endfunc",
+#     ]
+# ))
+interpreter.run(
+    ["func even",
+     "  if == n 0",
+     "      return True",
+     "  endif",
+     "  assign n - n 1",
+     "  funccall odd",
+     "  return result",
+     "endfunc",
+
+    "func odd",
+    "    if == n 0",
+    "        return False",
+    "    endif",
+    "    assign n - n 1",
+    "    funccall even",
+    "    return result",
+    "endfunc",
+
+    "func isEven",
+    "   funccall even",
+    "   if == result True",
+    '       funccall print "number is even"',
+    "   else",
+    '       funccall print "number is odd"',
+    "   endif",
+    "endfunc",
+
+    "func main",
+    "   assign n 15",
+    "   funccall isEven",
+    "   assign n 20",
+    "   funccall isEven",
+    "   assign n 0",
+    "   funccall isEven",
+    "   assign n 548",
+    "   funccall isEven",
+    "endfunc",
+]
+)
+
 # interpreter.run(
 #     ["func main",
 #      "  assign n 5",
-#      "  assign f 1",
+#      '  assign f 1',
 #      "  funccall fact",
 #      "endfunc",
 #      "func fact",
@@ -27,12 +90,13 @@ interpreter = Interpreter()
 #      "endfunc",
 #     ]
 # )
+print(interpreter.globals)
 
 # strtoint test
-interpreter.run(["func main",
-                  '  assign v1 20',
-                  '  funccall print v1',
-                  "endfunc"])
+# interpreter.run(["func main",
+#                   '  assign v1 20',
+#                   '  funccall print v1',
+#                   "endfunc"])
 
 # interpreter.run(["func main",
 #                   '  assign x "please"',
