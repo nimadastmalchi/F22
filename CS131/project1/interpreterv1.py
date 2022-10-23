@@ -2,7 +2,6 @@
 # UCLA CS 131 Project 1
 # Brewin Interpreter
 
-from re import T
 from intbase import InterpreterBase, ErrorType
 import operator
 from tokenizer import tokenize, Literal, Block
@@ -56,7 +55,8 @@ class Interpreter(InterpreterBase):
         if "main" not in self.globals:
             # TODO figure out error type
             super().error(ErrorType.SYNTAX_ERROR,\
-                          description='Could not find "main" function')
+                          description='Could not find "main" function',
+                          line_num=0)
         self.ip = self.globals["main"].start_line + 1
         # continue interpreting until we reach end of main
         while self.ip != self.globals["main"].end_line:
@@ -85,7 +85,7 @@ class Interpreter(InterpreterBase):
                 self.built_in_strtoint(tokens[2:])
             else:
                 func = self.globals[func_name]
-                if type(func) is not Block and func.type != Block.Types.FUNCTION:
+                if type(func) is not Block or func.type != Block.Types.FUNCTION:
                     # TODO check error type
                     super().error(ErrorType.NAME_ERROR,
                                   f"{func_name} is not a function",

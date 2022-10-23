@@ -3,15 +3,13 @@
 #include <vector>
 #include <unordered_set>
 
-std::string reverse(const std::string &);
-
 // Represents a bitstream
 class Bitstream {
 public:
-    Bitstream(const std::string &bitstream="") {
+    Bitstream(std::string bitstream="") {
         for (int i = 0; i < bitstream.size(); ++i) {
             if (bitstream[i] == '1') {
-                this->bits.insert(i);
+                this->bits.insert(bitstream.size() - 1 -i);
             }
         }
     }
@@ -74,7 +72,7 @@ public:
         for (std::unordered_set<int>::iterator it = this->bits.begin();
              it != this->bits.end();
              ++it) {
-            str[*it] = '1';
+            str[str.size() - 1 - *it] = '1';
         }
         return std::move(str);
     }
@@ -117,14 +115,6 @@ int main(int argc, char *argv[]) {
 
         }
     }
-}
-
-std::string reverse(const std::string &str) {
-    std::string reversed(str);
-    for (int i = 0; i < reversed.size() / 2; ++i) {
-        std::swap(reversed[i], reversed[reversed.size() - i - 1]);
-    }
-    return std::move(reversed);
 }
 
 bool valid_bit_string(const std::string &str) {

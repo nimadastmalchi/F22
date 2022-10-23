@@ -3,17 +3,26 @@ from interpreterv1 import Interpreter
 from tokenizer import tokenize
 
 
-
-# interpreter = Interpreter()
-# interpreter.run(["+ - 20 * 3 4 1",
-#                 "- * 3 + 3 7 / * 4 2 2",
-#                 "32",
-#                 '"this is a string"',
-#                 "-32",
-#                 "& > 6 5 <= 3 3",
-#                 "+ 1 2 # comment"])
 interpreter = Interpreter()
 globals = {}
+interpreter.run(["func main",
+                 "  assign x 10",
+                 "  funccall main2",
+                 '  funccall print \"hello world\"',
+                 "endfunc",
+                 "func main2",
+                 "  return",
+                 "endfunc"])
+print(interpreter.globals)
+interpreter.run(["func main",
+                 "  assign  y   10",
+                 "  funccall   main2",
+                 "endfunc",
+                 "func main2",
+                 "  return",
+                 "  assign should_not_be_assigned 10",
+                 "endfunc"])
+print(interpreter.globals)
 # print(tokenize(
 #     globals,
 #     ["func main",
@@ -32,46 +41,47 @@ globals = {}
 #      "endfunc",
 #     ]
 # ))
-interpreter.run(
-    ["func even",
-     "  if == n 0",
-     "      return True",
-     "  endif",
-     "  assign n - n 1",
-     "  funccall odd",
-     "  return result",
-     "endfunc",
 
-    "func odd",
-    "    if == n 0",
-    "        return False",
-    "    endif",
-    "    assign n - n 1",
-    "    funccall even",
-    "    return result",
-    "endfunc",
+# interpreter.run(
+#     ["func even",
+#      "  if == n 0",
+#      "      return True",
+#      "  endif",
+#      "  assign n - n 1",
+#      "  funccall odd",
+#      "  return result",
+#      "endfunc",
 
-    "func isEven",
-    "   funccall even",
-    "   if == result True",
-    '       funccall print "number is even"',
-    "   else",
-    '       funccall print "number is odd"',
-    "   endif",
-    "endfunc",
+#     "func odd",
+#     "    if == n 0",
+#     "        return False",
+#     "    endif",
+#     "    assign n - n 1",
+#     "    funccall even",
+#     "    return result",
+#     "endfunc",
 
-    "func main",
-    "   assign n 15",
-    "   funccall isEven",
-    "   assign n 20",
-    "   funccall isEven",
-    "   assign n 0",
-    "   funccall isEven",
-    "   assign n 548",
-    "   funccall isEven",
-    "endfunc",
-]
-)
+#     "func isEven",
+#     "   funccall even",
+#     "   if == result True",
+#     '       funccall print "number is even"',
+#     "   else",
+#     '       funccall print "number is odd"',
+#     "   endif",
+#     "endfunc",
+
+#     "func main",
+#     "   assign n 15",
+#     "   funccall isEven",
+#     "   assign n 20",
+#     "   funccall isEven",
+#     "   assign n 0",
+#     "   funccall isEven",
+#     "   assign n 548",
+#     "   funccall isEven",
+#     "endfunc",
+# ]
+# )
 
 # interpreter.run(
 #     ["func main",
@@ -90,7 +100,6 @@ interpreter.run(
 #      "endfunc",
 #     ]
 # )
-print(interpreter.globals)
 
 # strtoint test
 # interpreter.run(["func main",
