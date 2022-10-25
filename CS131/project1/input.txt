@@ -1,0 +1,17 @@
+func main
+    funccall main2
+    funccall main3
+    funccall print "x: " x
+    funccall print "result: " result   
+    while 20
+    endwhile
+endfunc
+
+func main2
+    return + 10 20
+endfunc
+
+func main3
+    assign x 10
+    return
+endfunc

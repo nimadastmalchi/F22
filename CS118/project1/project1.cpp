@@ -1,118 +1,85 @@
-#include <algorithm>
+#include "Bitstream.h"
+
 #include <iostream>
 #include <vector>
-#include <unordered_set>
-
-// Represents a bitstream
-class Bitstream {
-public:
-    Bitstream(std::string bitstream="") {
-        for (int i = 0; i < bitstream.size(); ++i) {
-            if (bitstream[i] == '1') {
-                this->bits.insert(bitstream.size() - 1 -i);
-            }
-        }
-    }
-
-    Bitstream(int bits[], int size) {
-        for (int i = 0; i < size; ++i) {
-            this->bits.insert(bits[i]);
-        }
-    }
-
-    void add(const Bitstream &other) {
-        // For all elements elem of other, if there elem is in this, then remove
-        // it. Otherwise, add it (i.e., compute xor).
-        for (std::unordered_set<int>::iterator it = other.bits.begin();
-             it != other.bits.end();
-             ++it) {
-            if (this->bits.find(*it) == this->bits.end()) {
-                this->bits.insert(*it);
-            } else {
-                this->bits.erase(*it);
-            }
-        }
-    }
-
-    // Compute this / other and return the remainder
-    Bitstream div(const Bitstream &divisor) {
-        Bitstream remainder(*this);
-        // Compute max terms of remainder and divisor:
-        int remainder_max = *std::max_element(remainder.bits.begin(),
-                                              remainder.bits.end());
-        int divisor_max = *std::max_element(divisor.bits.begin(), divisor.bits.end());
-        // While remainder has a larger term than the divisor:
-        while (remainder_max >= divisor_max) {
-            // Compute next term of quotient and update remainder:
-            Bitstream temp = divisor.single_mult(remainder_max - divisor_max);
-            remainder.add(temp);
-            remainder_max = *std::max_element(remainder.bits.begin(),
-                                              remainder.bits.end());
-        }
-        return std::move(remainder);
-    }
-
-    // Return this multiplied by single term "term" without changing this
-    Bitstream single_mult(int term) const {
-        Bitstream res;
-        for (std::unordered_set<int>::iterator it = this->bits.begin();
-             it != this->bits.end();
-             ++it) {
-            res.bits.insert(*it + term);
-        }
-        return std::move(res);
-    }
-
-    std::string to_string() const {
-        std::string str;
-        int max = *std::max_element(this->bits.begin(), this->bits.end());
-        for (int i = 0; i < max + 1; ++i) {
-            str += '0';
-        }
-        for (std::unordered_set<int>::iterator it = this->bits.begin();
-             it != this->bits.end();
-             ++it) {
-            str[str.size() - 1 - *it] = '1';
-        }
-        return std::move(str);
-    }
-
-private:
-    std::unordered_set<int> bits;
-};
-
-std::string calc_data_crc(const std::string &str);
 
 bool valid_bit_string(const std::string &str);
-
-// mod2 arithmetic operations
-void mod2_div(const std::string &quotient, const std::string &divisor);
+Bitstream get_message_plus_crc(const std::string &bit_str, const Bitstream &generator);
 
 int main(int argc, char *argv[]) {
+    if (argc <= 1) {
+        return 0;
+    }
     std::string input;
-    for (int i = 0; i < argc; ++i) {
+    for (int i = 1; i < argc; i+=2) {
         std::string flag = argv[i];
+        if (flag != "-c" && flag != "-v" && flag != "-f") {
+            std::cerr <<
+                "Error: Unexpected flag " << flag << std::endl;
+            continue;
+        }
+        if (i+1 >= argc) {
+            std::cerr <<
+                "Error: expected an input string of bits as argument to " << flag
+                << std::endl;
+            continue;
+        }
+        std::string bit_str = argv[i+1];
+        if (!valid_bit_string(bit_str)) {
+            std::cerr <<
+                "Error: expected a valid bit string as argument to -c"
+                << std::endl;
+            continue;
+        }
         if (flag == "-c") {
-            if (i+1 >= argc) {
-                std::cerr <<
-                    "Error: expected an input string of bits as argument to -c"
-                    << std::endl;
-            }
-            std::string bit_str = argv[i+1];
-            if (!valid_bit_string(bit_str)) {
-                std::cerr <<
-                    "Error: expected a valid bit string as argument to -c"
-                    << std::endl;
-            }
-            std::string data_plus_crc = calc_data_crc(bit_str);
-            std::cout << "Bitstring with CRC: " << data_plus_crc << std::endl;
-            ++i; // skip the argument to -c
+            // Create the generator:
+            int generator_bits[] = {16, 12, 7, 5, 0};
+            int num_generator_bits = generator_bits[0] + 1; // assuming bits is sorted 
+            Bitstream generator(generator_bits,
+                                sizeof(generator_bits) / sizeof(generator_bits[0]));
+
+            // Compute the data + CRC:
+            Bitstream data_plus_crc = get_message_plus_crc(bit_str, generator);
+            std::cout << data_plus_crc.to_string() << std::endl;
         } else if (flag == "-v") {
-
+            // Create the generator:
+            int generator_bits[] = {16, 12, 7, 5, 0};
+            int num_generator_bits = generator_bits[0] + 1; // assuming bits is sorted 
+            Bitstream generator(generator_bits,
+                                sizeof(generator_bits) / sizeof(generator_bits[0]));
+            // Divide data by generator and examine the remainder:
+            Bitstream data(bit_str);
+            if (get_remainder(data, generator).is_zero()) {
+                std::cout << "1" << std::endl;
+            } else {
+                std::cout << "0" << std::endl;
+            }
         } else if (flag == "-f") {
+            // Create the generator
+            int generator_bits[] = {16, 15, 12, 2, 1};
+            int num_generator_bits = generator_bits[0] + 1; // assuming bits is sorted 
+            Bitstream generator(generator_bits,
+                                sizeof(generator_bits) / sizeof(generator_bits[0]));
+            // Compute data + crc
+            Bitstream data_plus_crc = get_message_plus_crc(bit_str, generator);
+            int num_bits = data_plus_crc.num_bits();           
 
+            // Find all undetected 4 bit errors:
+            for (int i = 0; i < num_bits - 1; ++i) {
+                for (int j = i + 1; j < num_bits - 1; ++j) {
+                    for (int k = j + 1; k < num_bits - 1; ++k) {
+                        for (int l = k + 1; l < num_bits - 1; ++l) {
+                            int error_bits[] = {i, j, k, l};
+                            Bitstream error(error_bits, 4);
+                            Bitstream result = add(data_plus_crc, std::move(error));
+                            if (get_remainder(result, generator).is_zero()) {
+                                std::cout << result.to_string() << std::endl;
+                            }
+                        }
+                    }
+                }
+            }
         } else if (flag == "-t") {
-
         }
     }
 }
@@ -126,13 +93,10 @@ bool valid_bit_string(const std::string &str) {
     return true;
 }
 
-std::string calc_data_crc(const std::string &str) {
-    int bits[] = {16, 12, 7, 5, 0};
-    int num_generator_bits = bits[0] + 1; // assuming bits is sorted 
-    Bitstream generator(bits, sizeof(bits) / sizeof(bits[0]));
-    Bitstream data(str);
-    data = data.single_mult(num_generator_bits - 1);
-    Bitstream crc = data.div(generator);
+Bitstream get_message_plus_crc(const std::string &bit_str, const Bitstream &generator) {
+    Bitstream data(bit_str);
+    data = data.single_mult(generator.num_bits() - 1);
+    Bitstream crc = get_remainder(data, generator);
     data.add(std::move(crc));
-    return data.to_string();
+    return std::move(data);
 }

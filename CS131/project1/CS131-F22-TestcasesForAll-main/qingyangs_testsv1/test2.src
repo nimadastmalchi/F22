@@ -1,0 +1,29 @@
+# Our first Brewin program!
+func main        # our main function
+    funccall input "Enter a number: "
+    assign str_val result
+    funccall strtoint str_val
+    assign n result
+    funccall factorial
+    funccall print result
+    if == result 6
+        funccall print "you entered 3"
+    else 
+        funccall print "you did not enter 3"
+        if == result 479001600
+            funccall print "you entered 12 instead"
+        else
+            funccall print "you didn't enter 12 either"
+        endif
+    endif  
+    # funccall print "this shouldn't print"
+endfunc
+
+func factorial   # compute a factorial
+    assign f 1
+    while > n 1
+        assign f * f n
+        assign n - n 1
+    endwhile
+    return f
+endfunc

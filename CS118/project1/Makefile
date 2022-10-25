@@ -1,2 +1,2 @@
-a: project1.cpp
-	g++ project1.cpp -o crcExperiments
+crcExperiments: project1.cpp Bitstream.cpp
+	g++ project1.cpp Bitstream.cpp -o crcExperiments

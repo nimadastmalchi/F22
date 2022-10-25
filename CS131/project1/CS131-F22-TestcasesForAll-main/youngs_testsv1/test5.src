@@ -1,0 +1,9 @@
+func main #foo 
+  funccall    input    "What's your name buddy?"
+  assign name result 
+  funccall input "How many friends u got?"
+  funccall strtoint result
+  assign num result 
+# assign num non_existent
+  funccall    print    "hello world " name "! Ya f#cking nerd with " num " friends :))" # badudubiba 
+endfunc #bar

@@ -2,27 +2,33 @@ from re import A
 from interpreterv1 import Interpreter
 from tokenizer import tokenize
 
-
+f = open('input.txt')
+program = []
+for line in f:
+    if len(line) > 0 and line[-1] == '\n':
+        line = line[:-1]
+    program.append(line)
 interpreter = Interpreter()
-globals = {}
-interpreter.run(["func main",
-                 "  assign x 10",
-                 "  funccall main2",
-                 '  funccall print \"hello world\"',
-                 "endfunc",
-                 "func main2",
-                 "  return",
-                 "endfunc"])
-print(interpreter.globals)
-interpreter.run(["func main",
-                 "  assign  y   10",
-                 "  funccall   main2",
-                 "endfunc",
-                 "func main2",
-                 "  return",
-                 "  assign should_not_be_assigned 10",
-                 "endfunc"])
-print(interpreter.globals)
+interpreter.run(program)
+# globals = {}
+# interpreter.run(["func main",
+#                  "  assign x 10",
+#                  "  funccall main2",
+#                  '  funccall print \"hello world\"',
+#                  "endfunc",
+#                  "func main2",
+#                  "  return",
+#                  "endfunc"])
+# print(interpreter.globals)
+# interpreter.run(["func main",
+#                  "  assign  y   10",
+#                  "  funccall   main2",
+#                  "endfunc",
+#                  "func main2",
+#                  "  return",
+#                  "  assign should_not_be_assigned 10",
+#                  "endfunc"])
+# print(interpreter.globals)
 # print(tokenize(
 #     globals,
 #     ["func main",
