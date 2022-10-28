@@ -13,7 +13,7 @@ int main(int argc, char *argv[]) {
     std::string input;
     for (int i = 1; i < argc; i+=2) {
         std::string flag = argv[i];
-        if (flag != "-c" && flag != "-v" && flag != "-f") {
+        if (flag != "-c" && flag != "-v" && flag != "-f" && flag != "-t" && flag != "-p") {
             std::cerr <<
                 "Error: Unexpected flag " << flag << std::endl;
             continue;
@@ -56,7 +56,7 @@ int main(int argc, char *argv[]) {
             }
         } else if (flag == "-f") {
             // Create the generator
-            int generator_bits[] = {16, 15, 12, 2, 1};
+            int generator_bits[] = {16, 15, 12, 2, 0};
             int num_generator_bits = generator_bits[0] + 1; // assuming bits is sorted 
             Bitstream generator(generator_bits,
                                 sizeof(generator_bits) / sizeof(generator_bits[0]));
@@ -65,10 +65,10 @@ int main(int argc, char *argv[]) {
             int num_bits = data_plus_crc.num_bits();           
 
             // Find all undetected 4 bit errors:
-            for (int i = 0; i < num_bits - 1; ++i) {
-                for (int j = i + 1; j < num_bits - 1; ++j) {
-                    for (int k = j + 1; k < num_bits - 1; ++k) {
-                        for (int l = k + 1; l < num_bits - 1; ++l) {
+            for (int i = 0; i < num_bits; ++i) {
+                for (int j = i + 1; j < num_bits; ++j) {
+                    for (int k = j + 1; k < num_bits; ++k) {
+                        for (int l = k + 1; l < num_bits; ++l) {
                             int error_bits[] = {i, j, k, l};
                             Bitstream error(error_bits, 4);
                             Bitstream result = add(data_plus_crc, std::move(error));
@@ -79,7 +79,43 @@ int main(int argc, char *argv[]) {
                     }
                 }
             }
-        } else if (flag == "-t") {
+        } else if (flag == "-t" || flag == "-p") {
+            // Create the generator
+            Bitstream generator;
+            if (flag == "-t") {
+                int generator_bits[] = {16, 15, 12, 2, 0};
+                int num_generator_bits = generator_bits[0] + 1; // assuming bits is sorted 
+                generator = Bitstream(generator_bits,
+                                      sizeof(generator_bits) / sizeof(generator_bits[0]));
+            } else {
+                int generator_bits[] = {16, 15, 2, 0};
+                int num_generator_bits = generator_bits[0] + 1; // assuming bits is sorted 
+                generator = Bitstream(generator_bits,
+                                      sizeof(generator_bits) / sizeof(generator_bits[0]));
+            }
+            // Compute data + crc
+            Bitstream data_plus_crc = get_message_plus_crc(bit_str, generator);
+            int num_bits = data_plus_crc.num_bits();           
+
+            // Find all undetected 5 bit errors:
+            int num_five_bit_errors = 0;
+            for (int i = 0; i < num_bits; ++i) {
+                for (int j = i + 1; j < num_bits; ++j) {
+                    for (int k = j + 1; k < num_bits; ++k) {
+                        for (int l = k + 1; l < num_bits; ++l) {
+                            for (int m = l + 1; m < num_bits; ++m) {
+                                int error_bits[] = {i, j, k, l, m};
+                                Bitstream error(error_bits, 5);
+                                Bitstream result = add(data_plus_crc, std::move(error));
+                                if (get_remainder(result, generator).is_zero()) {
+                                    ++num_five_bit_errors;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            std::cout << num_five_bit_errors << std::endl;
         }
     }
 }
