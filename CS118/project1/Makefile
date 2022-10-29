@@ -1,2 +1,2 @@
 crcExperiments: project1.cpp Bitstream.cpp
-	g++ project1.cpp Bitstream.cpp -o crcExperiments
+	usr/bin/g++ project1.cpp Bitstream.cpp -o crcExperiments

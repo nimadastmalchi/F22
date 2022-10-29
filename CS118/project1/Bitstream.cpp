@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <iostream>
 
-Bitstream::Bitstream(std::string bitstream) {
+Bitstream::Bitstream(std::string bitstream) : minSize(0) {
     for (int i = 0; i < bitstream.size(); ++i) {
         if (bitstream[i] == '1') {
             this->bits.insert(bitstream.size() - 1 -i);
@@ -10,7 +10,7 @@ Bitstream::Bitstream(std::string bitstream) {
     }
 }
 
-Bitstream::Bitstream(int bits[], int size) {
+Bitstream::Bitstream(int bits[], int size) : minSize(0) {
     for (int i = 0; i < size; ++i) {
         this->bits.insert(bits[i]);
     }
@@ -30,6 +30,10 @@ void Bitstream::add(const Bitstream &other) {
     }
 }
 
+void Bitstream::setMinSize(int minSize) {
+    this->minSize = minSize;
+}
+
 // Return this multiplied by single term "term" without changing this
 Bitstream Bitstream::single_mult(int term) const {
     Bitstream res;
@@ -43,7 +47,7 @@ Bitstream Bitstream::single_mult(int term) const {
 
 std::string Bitstream::to_string() const {
     std::string str;
-    int size = num_bits();
+    int size = std::max(num_bits(), minSize);
     for (int i = 0; i < size; ++i) {
         str += '0';
     }

@@ -72,6 +72,7 @@ int main(int argc, char *argv[]) {
                             int error_bits[] = {i, j, k, l};
                             Bitstream error(error_bits, 4);
                             Bitstream result = add(data_plus_crc, std::move(error));
+                            result.setMinSize(data_plus_crc.num_bits());
                             if (get_remainder(result, generator).is_zero()) {
                                 std::cout << result.to_string() << std::endl;
                             }
