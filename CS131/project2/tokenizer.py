@@ -53,6 +53,34 @@ class Block:
     def __repr__(self) -> str:
         return self.__str__()
 
+class Block:
+    def __init__(self, tokens, start_line, end_line, indent, outer_block):
+        self.tokens = tokens
+        self.start_line = start_line
+        self.end_line = end_line
+        self.indent = indent
+        self.outer_block = outer_block
+        self.variables = {}
+    
+    def __str__(self):
+        return f"{self.tokens} ({self.start_line}:{self.end_line})"
+    
+    def __repr__(self) -> str:
+        return self.__str__()
+
+class IfBlock(Block):
+    def __init__(self, tokens, start_line, end_line, indent, outer_block, else_line):
+        super().__init__(tokens, start_line, end_line, indent, outer_block)
+        self.else_line = else_line
+
+class WhileBlock(Block):
+    def __init__(self, tokens, start_line, end_line, indent, outer_block):
+        super().__init__(tokens, start_line, end_line, indent, outer_block)
+
+class FunctionBlock(Block):
+    def __init__(self, tokens, start_line, end_line, indent, outer_block):
+        super().__init__(tokens, start_line, end_line, indent, outer_block)
+
 # @param lines     - list of strings such that element i is the i-th line of the program
 # @param functions - after this function call, functions maps all function names to
 #                    its corresponding Function type
@@ -121,9 +149,8 @@ def tokenize(functions, lines):
                 while program[end_line].indent != line.indent or\
                       len(program[end_line].tokens) == 0:
                     end_line += 1
-                program[i] = Block(line.tokens, line.line_number, end_line,\
-                                   line.indent, Block.Types.FUNCTION,\
-                                   blocks[-1])
+                program[i] = FunctionBlock(line.tokens, line.line_number, end_line,\
+                                   line.indent, blocks[-1])
                 blocks.append(program[i])
                 # create a variable for the function:
                 functions[line.tokens[1]] = program[i]
@@ -143,9 +170,8 @@ def tokenize(functions, lines):
                         elif program[end_line].tokens[0] == InterpreterBase.ENDIF_DEF:
                             break
                     end_line += 1
-                program[i] = Block(line.tokens, line.line_number, end_line,\
-                                   line.indent, Block.Types.IF, blocks[-1],\
-                                   else_line)
+                program[i] = IfBlock(line.tokens, line.line_number, end_line,\
+                                   line.indent, blocks[-1], else_line)
                 blocks.append(program[i])
             elif line.tokens[0] == InterpreterBase.WHILE_DEF:
                 # look for the end of the while loop
@@ -153,8 +179,8 @@ def tokenize(functions, lines):
                 while program[end_line].indent != line.indent or\
                       len(program[end_line].tokens) == 0:
                     end_line += 1
-                program[i] = Block(line.tokens, line.line_number, end_line,\
-                                   line.indent, Block.Types.WHILE, blocks[-1])
+                program[i] = WhileBlock(line.tokens, line.line_number, end_line,\
+                                   line.indent, blocks[-1])
                 blocks.append(program[i])
     return program
 

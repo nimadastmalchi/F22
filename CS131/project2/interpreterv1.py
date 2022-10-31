@@ -5,7 +5,7 @@
 from numpy import var
 from intbase import InterpreterBase, ErrorType
 import operator
-from tokenizer import tokenize, Literal, Block
+from tokenizer import tokenize, Literal, Block, FunctionBlock
 
 # map operand type to set of supported operators
 SUPPORTED_TYPES = {
@@ -125,7 +125,7 @@ class Interpreter(InterpreterBase):
                                   f'"{func_name}" is undefined',
                                   self.ip)
                 func = self.globals[func_name]
-                if type(func) is not Block or func.type != Block.Types.FUNCTION:
+                if not isinstance(func, FunctionBlock):
                     super().error(ErrorType.NAME_ERROR,
                                   f'"{func_name}" is not a function',
                                   self.ip)
