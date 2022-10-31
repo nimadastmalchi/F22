@@ -1,10 +1,11 @@
-func main
-    var int x
-    funccall print x
-    if < x 10
-        while < x 10
-            assign x 10
-        endwhile
-    endif
-    funccall print x
+func main void
+  var int a
+  assign a 5
+  if > a 0
+    funccall print a    # prints 5, since a is visible from outer scope
+    var string a        # new a variable shadows our original a 
+    assign a "foobar"   
+    funccall print a    # prints foobar
+  endif
+  funccall print a      # prints 5, since inner-foobar is out of scope
 endfunc

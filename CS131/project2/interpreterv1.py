@@ -94,7 +94,11 @@ class Interpreter(InterpreterBase):
                               self.ip)
             var_name = tokens[2]
             var = Variable(var_type)
-            # TODO ensure we aren't declaring a variable already declared in current block
+            # Check if we are declaring a duplicate variable:
+            if var_name in current_block.variables:
+                super().error(ErrorType.NAME_ERROR,
+                              f'Encountered duplicate variable definition of "{var_name}"',
+                              self.ip)
             current_block.variables[var_name] = var
         elif tokens[0] == InterpreterBase.ASSIGN_DEF:
             var_name = tokens[1]

@@ -53,7 +53,6 @@ class Block:
     def __repr__(self) -> str:
         return self.__str__()
 
-
 # @param lines     - list of strings such that element i is the i-th line of the program
 # @param functions - after this function call, functions maps all function names to
 #                    its corresponding Function type
