@@ -1,0 +1,11 @@
+func main
+ assign n 5
+ if > n 1
+  assign m 10
+ endif
+ if < m 5
+  assign m n
+ else
+  assign n m
+ endif
+endfunc

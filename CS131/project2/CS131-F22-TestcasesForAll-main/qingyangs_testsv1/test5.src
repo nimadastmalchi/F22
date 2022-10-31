@@ -1,0 +1,36 @@
+
+
+func func1
+ assign a "''"#random comment
+ funccall print a
+ return
+ funccall print "hello" # should not be printed
+endfunc
+
+func func2
+ assign b 3
+ assign c > b 5
+ funccall print c
+endfunc
+
+func func3
+ assign d "3"
+ funccall strtoint d
+ assign e + result 3
+ funccall print e
+ return
+endfunc
+
+func func4
+ assign f 3
+ assign g True
+ assign h "Hello"
+ funccall print f g h
+endfunc
+
+func main
+ funccall func1
+ funccall func2
+ funccall func3
+ funccall func4
+endfunc

@@ -2,7 +2,7 @@
 #include <algorithm>
 #include <iostream>
 
-Bitstream::Bitstream(std::string bitstream) : minSize(0) {
+Bitstream::Bitstream(std::string bitstream) : min_size(0) {
     for (int i = 0; i < bitstream.size(); ++i) {
         if (bitstream[i] == '1') {
             this->bits.insert(bitstream.size() - 1 -i);
@@ -10,7 +10,7 @@ Bitstream::Bitstream(std::string bitstream) : minSize(0) {
     }
 }
 
-Bitstream::Bitstream(int bits[], int size) : minSize(0) {
+Bitstream::Bitstream(int bits[], int size) : min_size(0) {
     for (int i = 0; i < size; ++i) {
         this->bits.insert(bits[i]);
     }
@@ -30,8 +30,8 @@ void Bitstream::add(const Bitstream &other) {
     }
 }
 
-void Bitstream::setMinSize(int minSize) {
-    this->minSize = minSize;
+void Bitstream::set_min_size(int min_size) {
+    this->min_size = min_size;
 }
 
 // Return this multiplied by single term "term" without changing this
@@ -47,7 +47,7 @@ Bitstream Bitstream::single_mult(int term) const {
 
 std::string Bitstream::to_string() const {
     std::string str;
-    int size = std::max(num_bits(), minSize);
+    int size = std::max(num_bits(), min_size);
     for (int i = 0; i < size; ++i) {
         str += '0';
     }
@@ -69,6 +69,7 @@ int Bitstream::num_bits() const {
 
 Bitstream get_remainder(const Bitstream &dividend, const Bitstream &divisor) {
     Bitstream remainder(dividend);
+    std::cout << dividend.to_string() << std::endl;
     // Compute max terms of remainder and divisor:
     int remainder_max = *remainder.bits.rbegin();
     int divisor_max = *divisor.bits.rbegin();

@@ -1,0 +1,19 @@
+    func main#uuuuuuuuuuu 
+      assign a 5 
+      assign b 6
+      assign r 0
+      funccall rec_mult
+      funccall print result
+    endfunc
+    func rec_mult # return a * b
+      if > b 0
+        assign t a
+        while > t 0
+          assign r + r 1
+          assign t - t 1
+        endwhile
+        assign b - b 1
+        funccall rec_mult
+      endif
+      return r
+    endfunc

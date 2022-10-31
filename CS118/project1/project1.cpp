@@ -72,7 +72,7 @@ int main(int argc, char *argv[]) {
                             int error_bits[] = {i, j, k, l};
                             Bitstream error(error_bits, 4);
                             Bitstream result = add(data_plus_crc, std::move(error));
-                            result.setMinSize(data_plus_crc.num_bits());
+                            result.set_min_size(data_plus_crc.num_bits());
                             if (get_remainder(result, generator).is_zero()) {
                                 std::cout << result.to_string() << std::endl;
                             }
@@ -132,6 +132,7 @@ bool valid_bit_string(const std::string &str) {
 
 Bitstream get_message_plus_crc(const std::string &bit_str, const Bitstream &generator) {
     Bitstream data(bit_str);
+    data.set_min_size(bit_str.size() + generator.num_bits() - 1);
     data = data.single_mult(generator.num_bits() - 1);
     Bitstream crc = get_remainder(data, generator);
     data.add(std::move(crc));

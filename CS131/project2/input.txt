@@ -1,0 +1,10 @@
+func main
+    var int x
+    funccall print x
+    if < x 10
+        while < x 10
+            assign x 10
+        endwhile
+    endif
+    funccall print x
+endfunc

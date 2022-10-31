@@ -9,14 +9,14 @@ public:
     Bitstream(std::string bitstream="");
     Bitstream(int bits[], int size);
     void add(const Bitstream &other);
-    void setMinSize(int);
+    void set_min_size(int);
     Bitstream single_mult(int term) const;
     std::string to_string() const;
     bool is_zero() const;
     int num_bits() const;
 private:
     std::set<int> bits;
-    int minSize;
+    int min_size;
 };
 
 // Bitstream operations:

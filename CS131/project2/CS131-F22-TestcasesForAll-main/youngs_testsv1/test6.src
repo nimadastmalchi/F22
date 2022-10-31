@@ -1,0 +1,11 @@
+func main
+  assign n 3
+  while > n 0
+    assign m 3
+    while > m 0
+      funccall print "(" n " " "" "'" "" " " m ")"
+      assign m - m 1
+    endwhile
+    assign n - n 1
+  endwhile
+endfunc
