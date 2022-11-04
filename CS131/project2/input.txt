@@ -8,12 +8,16 @@ func main void
     funccall print a    # prints foobar
   endif
   funccall print a      # prints 5, since inner-foobar is out of scope
-  funccall main22
+  if > 10 0
+    funccall main2
+  endif
+  funccall print resultb
 endfunc
 
 
-func main2 void
+func main2 bool
   var int b
   assign b 2
   funccall print b
+  return True
 endif

@@ -5,7 +5,7 @@
 from numpy import var
 from intbase import InterpreterBase, ErrorType
 import operator
-from tokenizer import tokenize, Literal, Block, FunctionBlock
+from tokenizer import tokenize, Literal, Block, FunctionBlock, Variable
 
 # map operand type to set of supported operators
 SUPPORTED_TYPES = {
@@ -13,7 +13,6 @@ SUPPORTED_TYPES = {
     str: {"+", "==", "!=", "<", ">", "<=", ">="},
     bool: {"!=", "==", "&", "|"}
 }
-
 
 # map operator string to operator function
 OPERATOR_MAPPING = {
@@ -31,28 +30,6 @@ OPERATOR_MAPPING = {
     "&" : operator.and_,
     "|" : operator.or_
 }
-
-
-# represents a variable, which consists of a type and a value
-class Variable:
-    class Types:
-        INT = int
-        BOOL = bool
-        STRING = str
-
-    # set this variable's type to type_str and set a default value according to
-    # the type
-    def __init__(self, type_str):
-        if type_str == InterpreterBase.INT_DEF:
-            self.type = Variable.Types.INT
-            self.value = 0
-        elif type_str == InterpreterBase.BOOL_DEF:
-            self.type = Variable.Types.BOOL
-            self.value = False
-        elif type_str == InterpreterBase.STRING_DEF:
-            self.type = Variable.Types.STRING
-            self.value = ""
-
 
 class Interpreter(InterpreterBase):
     def __init__(self, console_output=True, input=None, trace_output=False):
@@ -78,7 +55,7 @@ class Interpreter(InterpreterBase):
     # calls will execute to completion and self.ip will be placed on the line
     # following the executed block.
     # @param current_function - The Function object currently being executed.
-    def interpret(self, current_function, current_block : Block):
+    def interpret(self, current_function : FunctionBlock, current_block : Block, previous_function : FunctionBlock=None):
         tokens = self.tokenized_program[self.ip].tokens
         cur_indent = self.tokenized_program[self.ip].indent
         if len(tokens) == 0 or\
@@ -134,7 +111,7 @@ class Interpreter(InterpreterBase):
                 # evaluate the function:
                 self.ip = func.start_line + 1
                 while self.ip != func.end_line:
-                    self.interpret(func, func)
+                    self.interpret(func, func, current_function)
                 # set self.ip to address to return to:
                 self.ip = lr
         elif tokens[0] == InterpreterBase.WHILE_DEF:
@@ -155,7 +132,7 @@ class Interpreter(InterpreterBase):
                 self.ip += 1 # skip the "while" statement
                 while self.ip != end_line:
                     # recursively interpret each line
-                    self.interpret(current_function, block)
+                    self.interpret(current_function, block, previous_function)
                     # if there was a "return" in the "while" loop, then stop
                     if self.ip == current_function.end_line:
                         return
@@ -164,9 +141,24 @@ class Interpreter(InterpreterBase):
         elif tokens[0] == InterpreterBase.RETURN_DEF:
             if len(tokens) > 1:
                 # Evaluate the expression being returned and set it to the
-                # "result" global variable:
+                # "resultx" local variable of previous function:
                 return_val = self.eval_prefix_expr(tokens[1:], current_block)
-                self.globals[InterpreterBase.RESULT_DEF] = return_val
+                if type(return_val) is not current_function.return_type:
+                    super().error(ErrorType.TYPE_ERROR,
+                                  f'Incompatible return type',
+                                  self.ip)
+                if current_function.return_type is int:
+                    return_var = Variable('int')
+                    return_var.value = return_val
+                    previous_function.variables['resulti'] = return_var
+                elif current_function.return_type is bool:
+                    return_var = Variable('bool')
+                    return_var.value = return_val
+                    previous_function.variables['resultb'] = return_var
+                else:
+                    return_var = Variable('string')
+                    return_var.value = return_val
+                    previous_function.variables['results'] = return_var
             self.ip = current_function.end_line
             return
         elif tokens[0] == InterpreterBase.IF_DEF:
@@ -193,14 +185,14 @@ class Interpreter(InterpreterBase):
                 cur_end_line = else_line if else_line is not None else end_line
                 self.ip += 1
                 while self.ip != cur_end_line:
-                    self.interpret(current_function, block)
+                    self.interpret(current_function, block, previous_function)
                     # if there was a "return" in the "if" segment, then stop
                     if self.ip == current_function.end_line:
                         return
             elif else_line is not None:
                 self.ip = else_line + 1
                 while self.ip != end_line:
-                    self.interpret(current_function)
+                    self.interpret(current_function, block, previous_function)
                     # if there was a "return" in the else segment, then stop
                     if self.ip == current_function.end_line:
                         return

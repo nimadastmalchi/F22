@@ -15,6 +15,26 @@ class Literal:
     def __repr__(self) -> str:
         return f"{self.val} (literal)"
 
+# Represents a variable, which consists of a type and a value
+class Variable:
+    class Types:
+        INT = int
+        BOOL = bool
+        STRING = str
+
+    # set this variable's type to type_str and set a default value according to
+    # the type
+    def __init__(self, type_str):
+        if type_str == InterpreterBase.INT_DEF:
+            self.type = Variable.Types.INT
+            self.value = 0
+        elif type_str == InterpreterBase.BOOL_DEF:
+            self.type = Variable.Types.BOOL
+            self.value = False
+        elif type_str == InterpreterBase.STRING_DEF:
+            self.type = Variable.Types.STRING
+            self.value = ""
+
 
 # Represents a single executable line of the program
 class Line:
@@ -78,8 +98,12 @@ class WhileBlock(Block):
         super().__init__(tokens, start_line, end_line, indent, outer_block)
 
 class FunctionBlock(Block):
-    def __init__(self, tokens, start_line, end_line, indent, outer_block):
+    def __init__(self, tokens, start_line, end_line, indent, outer_block, params, return_type):
         super().__init__(tokens, start_line, end_line, indent, outer_block)
+        self.params = params
+        for param in params:
+            self.variables[param[0]] = param[1]
+        self.return_type = return_type
 
 # @param lines     - list of strings such that element i is the i-th line of the program
 # @param functions - after this function call, functions maps all function names to
@@ -132,7 +156,7 @@ def tokenize(functions, lines):
                 token = Literal(False)
             tokens.append(token)
         program.append(Line(tokens, line_number, indent))
-    
+
     # Replace Lines representing "while", "if", or "function" with the
     # appropriate types
     # keep track of current block in a stack
@@ -144,13 +168,31 @@ def tokenize(functions, lines):
                                   InterpreterBase.ENDWHILE_DEF}:
                 blocks.pop()
             if line.tokens[0] == InterpreterBase.FUNC_DEF:
+                return_types = {
+                    'void'   : None,
+                    'int'    : int,
+                    'bool'   : bool,
+                    'string' : str
+                }
+                return_type = return_types[line.tokens[-1]]
+
+                # Form the params array
+                params = []
+                param_tokens = line.tokens[2:-1]
+                for param_token in param_tokens:
+                    param_token = param_token.split(':')
+                    var_name = param_token[0]
+                    type = param_token[1]
+                    params.append((var_name, Variable(type)))
+
+                # create the params array:
                 # look for the end of the function:
                 end_line = line.line_number + 1
                 while program[end_line].indent != line.indent or\
                       len(program[end_line].tokens) == 0:
                     end_line += 1
                 program[i] = FunctionBlock(line.tokens, line.line_number, end_line,\
-                                   line.indent, blocks[-1])
+                                   line.indent, blocks[-1], params, return_type)
                 blocks.append(program[i])
                 # create a variable for the function:
                 functions[line.tokens[1]] = program[i]
