@@ -2,7 +2,6 @@
 # UCLA CS 131 Project 1
 # Brewin Interpreter
 
-from numpy import var
 from intbase import InterpreterBase, ErrorType
 import operator
 from tokenizer import tokenize, Literal, Block, FunctionBlock, Variable
@@ -69,21 +68,22 @@ class Interpreter(InterpreterBase):
                 super().error(ErrorType.SYNTAX_ERROR,
                               f'Unkown type "{var_type}"',
                               self.ip)
-            var_name = tokens[2]
-            var = Variable(var_type)
-            # Check if we are declaring a duplicate variable:
-            if var_name in current_block.variables:
-                super().error(ErrorType.NAME_ERROR,
-                              f'Encountered duplicate variable definition of "{var_name}"',
-                              self.ip)
-            current_block.variables[var_name] = var
+            for var_name in tokens[2:]:
+                var = Variable(var_type)
+                # Check if we are declaring a duplicate variable:
+                if var_name in current_block.variables:
+                    super().error(ErrorType.NAME_ERROR,
+                                f'Encountered duplicate variable definition of "{var_name}"',
+                                self.ip)
+                current_block.variables[var_name] = var
         elif tokens[0] == InterpreterBase.ASSIGN_DEF:
             var_name = tokens[1]
             var = self.get_variable(var_name, current_block)
             var_value = self.eval_prefix_expr(tokens[2:], current_block)
             if var.type is not type(var_value):
                 super().error(ErrorType.TYPE_ERROR,
-                              f'Cannot assign a {type(var_value)} to a {var.type}')
+                              f'Cannot assign a {type(var_value)} to a {var.type}',
+                              self.ip)
             var.value = var_value
         elif tokens[0] == InterpreterBase.FUNCCALL_DEF:
             func_name = tokens[1]
@@ -106,6 +106,60 @@ class Interpreter(InterpreterBase):
                     super().error(ErrorType.NAME_ERROR,
                                   f'"{func_name}" is not a function',
                                   self.ip)
+                # Pass parameters
+                # funccall func_name param1 param2 ...
+                # TODO handle an incorrect number of parameters
+                params = tokens[2:]
+                for i, param in enumerate(params):
+                    if func.params[i][1].type in {InterpreterBase.REFBOOL_DEF,
+                                                  InterpreterBase.REFINT_DEF,
+                                                  InterpreterBase.REFSTRING_DEF}:
+                        try:
+                            var = self.get_variable(param, current_block)
+                        except:
+                            if type(param) is not Literal:
+                                super().error(ErrorType.TYPE_ERROR,
+                                            f'Unknown token being passed to ref',
+                                            self.ip)
+                            # TODO handle assigning constants to references
+                            continue
+                        if func.params[i][1].type == InterpreterBase.REFBOOL_DEF and\
+                           var.type is not Variable.Types.BOOL and var.type != Variable.Types.REFBOOL:
+                            super().error(ErrorType.TYPE_ERROR,
+                                          f'Incompatible param type(s)',
+                                          self.ip)
+                        if func.params[i][1].type == InterpreterBase.REFINT_DEF and\
+                           var.type is not Variable.Types.INT and var.type != Variable.Types.REFINT:
+                            super().error(ErrorType.TYPE_ERROR,
+                                          f'Incompatible param type(s)',
+                                          self.ip)
+                        if func.params[i][1].type == InterpreterBase.REFSTRING_DEF and\
+                           var.type is not Variable.Types.STRING and var.type != Variable.Types.REFSTRING:
+                            super().error(ErrorType.TYPE_ERROR,
+                                          f'Incompatible param type(s)',
+                                          self.ip)
+                        func.params[i][1] = var
+                        func.variables[func.params[i][0]] = var
+                    else:
+                        try:
+                            var = self.get_variable(param, current_block)
+                            if func.params[i][1].type is not var.type:
+                                super().error(ErrorType.TYPE_ERROR,
+                                            f'Incompatible param type(s)',
+                                            self.ip)
+                            func.params[i][1].value = var.value
+                        except:
+                            if type(param) is not Literal:
+                                super().error(ErrorType.SYNTAX_ERROR,
+                                            f'Unknown token',
+                                            self.ip)
+                            # Must be a literal
+                            if func.params[i][1].type is not type(param.val):
+                                super().error(ErrorType.TYPE_ERROR,
+                                             f'Incompatible param type(s)',
+                                             self.ip)
+                            func.params[i][1].value = param.val
+
                 # store current line in lr before function call:
                 lr = self.ip
                 # evaluate the function:
@@ -136,10 +190,17 @@ class Interpreter(InterpreterBase):
                     # if there was a "return" in the "while" loop, then stop
                     if self.ip == current_function.end_line:
                         return
+                # reset all variables created in the while loop block
+                block.variables = {}
                 self.ip = start_line
             self.ip = end_line
         elif tokens[0] == InterpreterBase.RETURN_DEF:
-            if len(tokens) > 1:
+            if current_function.return_type is None and len(tokens) != 1:
+                super().error(ErrorType.TYPE_ERROR,
+                              f'Incompatible return type',
+                              self.ip)
+            # If there is a return value and previous function is not None
+            if len(tokens) > 1 and previous_function is not None:
                 # Evaluate the expression being returned and set it to the
                 # "resultx" local variable of previous function:
                 return_val = self.eval_prefix_expr(tokens[1:], current_block)
@@ -259,7 +320,8 @@ class Interpreter(InterpreterBase):
                               description=f'Undefined variable "{args[0]}"',\
                               line_num=self.ip)
         super().output(concat_string)
-        self.globals[InterpreterBase.RESULT_DEF] = super().get_input()
+        current_block.variables['results'] = Variable('string')
+        current_block.variables['results'].value = super().get_input()
 
     # Call the built-in print function with argument tokens "args"
     def built_in_print(self, args, current_block):
@@ -285,7 +347,7 @@ class Interpreter(InterpreterBase):
         if type(args[0]) is Literal:
             val = args[0].val
         else:
-            val = self.get_variable(args[0]).value
+            val = self.get_variable(args[0], current_block).value
 
         # If the value is not a string, then throw type error:
         if type(val) is not str:
@@ -296,7 +358,8 @@ class Interpreter(InterpreterBase):
         else:
             try:
                 converted_int = int(val)
-                self.globals[InterpreterBase.RESULT_DEF] = converted_int
+                current_block.variables['resulti'] = Variable('int')
+                current_block.variables['resulti'].value = converted_int
             except:
                 # Value is a string, but cannot be converted to an int
                 # e.g., val == "not a number"

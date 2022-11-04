@@ -1,5 +1,5 @@
 from re import A
-from interpreterv1 import Interpreter
+from interpreterv2 import Interpreter
 from tokenizer import tokenize
 
 f = open('input.txt')
