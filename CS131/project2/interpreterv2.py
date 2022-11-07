@@ -182,6 +182,13 @@ class Interpreter(InterpreterBase):
                                              f'Incompatible param type(s)',
                                              self.ip)
                             func.params[i][1].value = param.val
+                # set the default return value
+                if func.return_type is int:
+                    current_function.variables['resulti'] = Variable(InterpreterBase.INT_DEF)
+                elif func.return_type is bool:
+                    current_function.variables['resultb'] = Variable(InterpreterBase.BOOL_DEF)
+                elif func.return_type is str:
+                    current_function.variables['results'] = Variable(InterpreterBase.STRING_DEF)
 
                 # store current line in lr before function call:
                 lr = self.ip
@@ -218,10 +225,29 @@ class Interpreter(InterpreterBase):
                 self.ip = start_line
             self.ip = end_line
         elif tokens[0] == InterpreterBase.RETURN_DEF:
+            # void return type and we are returning something
             if current_function.return_type is None and len(tokens) != 1:
                 super().error(ErrorType.TYPE_ERROR,
                               f'Incompatible return type',
                               self.ip)
+            # void return type and we are returning nothing
+            if current_function.return_type is None and len(tokens) == 1:
+                self.ip = current_function.end_line
+                return
+            # non-void return type and we are returning nothing
+            if current_function.return_type is not None and len(tokens) == 1:
+                if current_function.return_type is int:
+                    return_var = Variable(InterpreterBase.INT_DEF)
+                    return_var.value = 0
+                    previous_function.variables['resulti'] = return_var
+                elif current_function.return_type is bool:
+                    return_var = Variable(InterpreterBase.BOOL_DEF)
+                    return_var.value = False
+                    previous_function.variables['resultb'] = return_var
+                elif current_function.return_type is str:
+                    return_var = Variable(InterpreterBase.STRING_DEF)
+                    return_var.value = ""
+                    previous_function.variables['results'] = return_var
             # If there is a return value and previous function is not None
             if len(tokens) > 1 and previous_function is not None:
                 # Evaluate the expression being returned and set it to the
@@ -232,17 +258,21 @@ class Interpreter(InterpreterBase):
                                   f'Incompatible return type',
                                   self.ip)
                 if current_function.return_type is int:
-                    return_var = Variable('int')
+                    return_var = Variable(InterpreterBase.INT_DEF)
                     return_var.value = return_val
                     previous_function.variables['resulti'] = return_var
                 elif current_function.return_type is bool:
-                    return_var = Variable('bool')
+                    return_var = Variable(InterpreterBase.BOOL_DEF)
                     return_var.value = return_val
                     previous_function.variables['resultb'] = return_var
-                else:
-                    return_var = Variable('string')
+                elif current_function.return_type is str:
+                    return_var = Variable(InterpreterBase.STRING_DEF)
                     return_var.value = return_val
                     previous_function.variables['results'] = return_var
+                else:
+                    super().error(ErrorType.TYPE_ERROR,
+                                  f'Incompatible return type',
+                                  self.ip)
             self.ip = current_function.end_line
             return
         elif tokens[0] == InterpreterBase.IF_DEF:
@@ -340,7 +370,7 @@ class Interpreter(InterpreterBase):
                 var = self.get_variable(arg, current_block)
                 concat_string += str(var.value)
         super().output(concat_string)
-        current_function.variables['results'] = Variable('string')
+        current_function.variables['results'] = Variable(InterpreterBase.STRING_DEF)
         current_function.variables['results'].value = super().get_input()
 
     # Call the built-in print function with argument tokens "args"
@@ -378,7 +408,7 @@ class Interpreter(InterpreterBase):
         else:
             try:
                 converted_int = int(val)
-                current_function.variables['resulti'] = Variable('int')
+                current_function.variables['resulti'] = Variable(InterpreterBase.INT_DEF)
                 current_function.variables['resulti'].value = converted_int
             except:
                 # Value is a string, but cannot be converted to an int

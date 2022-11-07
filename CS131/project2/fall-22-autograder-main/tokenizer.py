@@ -59,6 +59,7 @@ class Line:
         return f"{self.__str__()}"
 
 
+# Represents a scoped block in the program (while, if, or function)
 class Block:
     def __init__(self, tokens, start_line, end_line, indent, outer_block):
         self.tokens = tokens

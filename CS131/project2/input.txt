@@ -1,11 +1,10 @@
-func foo void
-  funccall print resulti  # we never called a function, so we can’t refer to resulti
-endfunc
+func foo bool
+   if False
+      return 10
+   endif
+endfunc # returns 0??
 
 func main void
-  if True
-    funccall foo # resulti is set upon return from bar
-    funccall print resulti  # valid since resulti is in scope
-  endif	
-  funccall print resulti  # also valid since resulti has top-level scope
+  funccall foo
+  funccall print resultb
 endfunc
