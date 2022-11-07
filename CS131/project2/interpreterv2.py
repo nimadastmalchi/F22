@@ -65,8 +65,8 @@ class Interpreter(InterpreterBase):
             if var_type not in {InterpreterBase.INT_DEF,
                                 InterpreterBase.BOOL_DEF,
                                 InterpreterBase.STRING_DEF}:
-                super().error(ErrorType.SYNTAX_ERROR,
-                              f'Unkown type "{var_type}"',
+                super().error(ErrorType.TYPE_ERROR,
+                              f'Unknown type "{var_type}"',
                               self.ip)
             for var_name in tokens[2:]:
                 var = Variable(var_type)
@@ -89,11 +89,11 @@ class Interpreter(InterpreterBase):
             func_name = tokens[1]
             # Handle built-in function calls:
             if func_name == InterpreterBase.INPUT_DEF:
-                self.built_in_input(tokens[2:], current_block)
+                self.built_in_input(tokens[2:], current_block, current_function)
             elif func_name == InterpreterBase.PRINT_DEF:
                 self.built_in_print(tokens[2:], current_block)
             elif func_name == InterpreterBase.STRTOINT_DEF:
-                self.built_in_strtoint(tokens[2:], current_block)
+                self.built_in_strtoint(tokens[2:], current_block, current_function)
             else:
                 # The function must be a user-defined type. Look for it in the
                 # globals dictionary:
@@ -108,8 +108,11 @@ class Interpreter(InterpreterBase):
                                   self.ip)
                 # Pass parameters
                 # funccall func_name param1 param2 ...
-                # TODO handle an incorrect number of parameters
                 params = tokens[2:]
+                if len(func.params) != len(params):
+                    super().error(ErrorType.NAME_ERROR,
+                                  f'Incorrect number of parameters',
+                                  self.ip)
                 for i, param in enumerate(params):
                     if func.params[i][1].type in {InterpreterBase.REFBOOL_DEF,
                                                   InterpreterBase.REFINT_DEF,
@@ -121,7 +124,27 @@ class Interpreter(InterpreterBase):
                                 super().error(ErrorType.TYPE_ERROR,
                                             f'Unknown token being passed to ref',
                                             self.ip)
-                            # TODO handle assigning constants to references
+                            if func.params[i][1].type == InterpreterBase.REFBOOL_DEF:
+                                func.params[i][1].type = bool
+                                if type(param.val) is not bool:
+                                    super().error(ErrorType.TYPE_ERROR,
+                                                f'Incompatible param type(s)',
+                                                self.ip)
+                                func.params[i][1].value = param.val
+                            elif func.params[i][1].type == InterpreterBase.REFINT_DEF:
+                                func.params[i][1].type = int
+                                if type(param.val) is not int:
+                                    super().error(ErrorType.TYPE_ERROR,
+                                                f'Incompatible param type(s)',
+                                                self.ip)
+                                func.params[i][1].value = param.val
+                            elif func.params[i][1].type == InterpreterBase.REFSTRING_DEF:
+                                func.params[i][1].type = str
+                                if type(param.val) is not str:
+                                    super().error(ErrorType.TYPE_ERROR,
+                                                f'Incompatible param type(s)',
+                                                self.ip)
+                                func.params[i][1].value = param.val
                             continue
                         if func.params[i][1].type == InterpreterBase.REFBOOL_DEF and\
                            var.type is not Variable.Types.BOOL and var.type != Variable.Types.REFBOOL:
@@ -308,20 +331,17 @@ class Interpreter(InterpreterBase):
         self.globals = {}
 
     # Call built-in input function with argument tokens "args"
-    def built_in_input(self, args, current_block):
+    def built_in_input(self, args, current_block, current_function):
         concat_string = ""
         for arg in args:
             if type(arg) is Literal:
                 concat_string += str(arg.val)
-            elif arg in self.globals:
-                concat_string += str(self.globals[arg])
             else:
-                super().error(ErrorType.NAME_ERROR,\
-                              description=f'Undefined variable "{args[0]}"',\
-                              line_num=self.ip)
+                var = self.get_variable(arg, current_block)
+                concat_string += str(var.value)
         super().output(concat_string)
-        current_block.variables['results'] = Variable('string')
-        current_block.variables['results'].value = super().get_input()
+        current_function.variables['results'] = Variable('string')
+        current_function.variables['results'].value = super().get_input()
 
     # Call the built-in print function with argument tokens "args"
     def built_in_print(self, args, current_block):
@@ -335,7 +355,7 @@ class Interpreter(InterpreterBase):
         super().output(concat_string)
 
     # Call the built-in strtoint function with argument tokens "args"
-    def built_in_strtoint(self, args, current_block):
+    def built_in_strtoint(self, args, current_block, current_function):
         if len(args) != 1:
             super().error(\
                 ErrorType.SYNTAX_ERROR,\
@@ -358,8 +378,8 @@ class Interpreter(InterpreterBase):
         else:
             try:
                 converted_int = int(val)
-                current_block.variables['resulti'] = Variable('int')
-                current_block.variables['resulti'].value = converted_int
+                current_function.variables['resulti'] = Variable('int')
+                current_function.variables['resulti'].value = converted_int
             except:
                 # Value is a string, but cannot be converted to an int
                 # e.g., val == "not a number"
