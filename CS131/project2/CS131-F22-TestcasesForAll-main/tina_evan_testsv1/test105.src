@@ -1,0 +1,25 @@
+func main
+  while False
+    funccall print "should not have printed"
+  endwhile
+  funccall print "should have skipped directly to endwhile"
+
+  assign i 0
+  while < i 5
+    funccall print "on this itteration: i=" i
+    assign i + i 1
+  endwhile
+  funccall print "can return to normal flow of execution"
+
+  assign i 0
+  while < i 3
+    assign j i
+    while < j 3
+      funccall print "on this itteration (i,j) are " i j
+      assign j + j 1
+    endwhile
+    funccall print "broke out of inner while j=" j
+    assign i + i 1
+  endwhile
+  funccall print "broke out of outer while i=" i
+endfunc

@@ -1,0 +1,15 @@
+# tests recursive pass by reference
+
+func foo n:refint void
+  funccall print "n is currently " n
+  if < n 5
+    assign n + n 1
+    funccall foo n
+  endif
+endfunc
+
+func main void
+    var int n
+    funccall foo n
+    funccall print n
+endfunc

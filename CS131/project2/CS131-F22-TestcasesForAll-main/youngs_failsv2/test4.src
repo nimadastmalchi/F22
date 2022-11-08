@@ -1,0 +1,6 @@
+func main void
+    funccall foo 2
+endfunc
+
+func foo void
+endfunc

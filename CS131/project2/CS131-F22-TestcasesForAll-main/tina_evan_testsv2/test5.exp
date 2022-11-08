@@ -1,0 +1,6 @@
+previous value of a: 10
+previous value of b: hi
+previous value of c: False
+a should be 5: 5
+b should still be 'hi': hi
+c should be True: True

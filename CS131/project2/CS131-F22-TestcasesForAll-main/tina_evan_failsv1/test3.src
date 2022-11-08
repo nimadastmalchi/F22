@@ -1,0 +1,7 @@
+func name
+    funccall print "should not be run #"
+endfunc
+
+func main
+    funccall wrongName
+endfunc

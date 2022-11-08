@@ -1,0 +1,12 @@
+func main  
+  assign x True
+  assign x -001
+  funccall print x
+  assign result + x x
+  funccall print result
+  assign x "-1##1"
+  assign result + x x
+  funccall print result
+  assign result + 1 - * 2 3 * 4 - 5 6 # this bad boy can fit so much prefix
+  funccall print result
+endfunc

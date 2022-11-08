@@ -1,0 +1,14 @@
+func main
+  assign my_variable 1
+  assign         mY_VaRIaBLe                       2
+  funccall          print         my_variable     mY_VaRIaBLe
+  assign variableName1With2Numbers 3
+  assign result 4
+  funccall print variableName1With2Numbers result
+  assign string "a STring # Constant !4 # 09 #*!_#(* '' ''' '"
+  assign bool_true True
+  assign bool_false False
+  funccall print string bool_true bool_false
+  assign negative -1209804
+  funccall print negative
+endfunc

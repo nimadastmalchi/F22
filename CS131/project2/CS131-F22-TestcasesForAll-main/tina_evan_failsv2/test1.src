@@ -1,0 +1,11 @@
+#make sure when a block ends, variable in the block goes out of scope
+func main void
+    var string a 
+    assign a "hi"
+    if > 1 0
+        var int b
+        funccall print b
+    endif
+    funccall print a
+    funccall print b
+endfunc

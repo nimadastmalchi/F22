@@ -1,0 +1,14 @@
+# test default return values
+
+func foo int
+    return
+endfunc
+
+func bar bool
+endfunc
+
+func main void
+    funccall foo
+    funccall bar
+    funccall print resulti " " resultb
+endfunc

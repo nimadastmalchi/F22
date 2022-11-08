@@ -1,6 +1,6 @@
 # Nima Amir Dastmalchi (505320372)
-# UCLA CS 131 Project 1
-# Brewin Interpreter
+# UCLA CS 131 Project 2
+# Brewin++ Interpreter
 
 from intbase import InterpreterBase, ErrorType
 import operator
@@ -102,6 +102,9 @@ class Interpreter(InterpreterBase):
                                   f'"{func_name}" is undefined',
                                   self.ip)
                 func = self.globals[func_name]
+                func.start_new_frame_params()
+                if func.variables is None:
+                    func.start_new_frame_variables()
                 if not isinstance(func, FunctionBlock):
                     super().error(ErrorType.NAME_ERROR,
                                   f'"{func_name}" is not a function',
@@ -194,8 +197,11 @@ class Interpreter(InterpreterBase):
                 lr = self.ip
                 # evaluate the function:
                 self.ip = func.start_line + 1
+                func.start_new_frame_variables()
                 while self.ip != func.end_line:
                     self.interpret(func, func, current_function)
+                func.end_frame()
+                # TODO need to somehow keep track of multiple variables of functions
                 # set self.ip to address to return to:
                 self.ip = lr
         elif tokens[0] == InterpreterBase.WHILE_DEF:

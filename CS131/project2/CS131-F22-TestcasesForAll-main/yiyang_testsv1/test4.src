@@ -1,0 +1,57 @@
+# testing boolean and string expression operations
+func main
+  funccall and1
+  funccall print result
+  funccall and2
+  funccall print result
+  funccall and3
+  funccall print result
+  funccall or1
+  funccall print result
+  funccall or2
+  funccall print result
+  funccall or3
+  funccall print result
+  funccall cat
+  funccall print result
+
+endfunc
+
+func and1
+    assign a True
+    assign b True
+    return & a b
+endfunc
+func and2
+    assign a True
+    assign b False
+    return & a b
+endfunc
+func and3
+    assign a False
+    assign b False
+    return & a b
+endfunc
+
+func or1
+    assign a False
+    assign b True
+    return | a b
+endfunc
+
+func or2
+    assign a False
+    assign b False
+    return | a b
+endfunc
+func or3
+    assign a True
+    assign b True
+    return | a b
+endfunc
+
+func cat
+    assign a "Hallo!"
+    assign b " Carey!"
+    return + a b
+endfunc

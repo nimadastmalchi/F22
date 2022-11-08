@@ -1,0 +1,64 @@
+func main
+    # testing different expressions
+
+    # testing arithmetic
+    assign var -1
+    funccall print "var: " var
+    assign var "hi"
+    assign var2 var
+    funccall print "var2: " var2
+    assign var3 % 10 / * 5 2 - 4 1
+    funccall print var3
+    if > 1 var3
+        funccall print "1 is greater than var3"
+    else
+        funccall print "var3 is greater or equal than 1"
+    endif
+    assign var10 < + 1 2 - 5 0
+    funccall print var10
+    assign var11 >= 5 5
+    funccall print var11
+    assign var11 > 5 6
+    funccall print var11
+    assign var11 != 5 6
+    funccall print var11
+
+    # testing strings
+    if > "abc" "bcd"
+        funccall print "boo"
+    else
+        funccall print "yay"
+    endif
+    assign var5 "hi "
+    assign var6 + var5 "friend"
+    funccall print var6
+    if != "abc" "bcd"
+        funccall print "not equal"
+    endif
+    assign hi "hi"
+    if >= "hi" hi
+        funccall print "hi is greater than or equal"
+    endif 
+
+    # testing bools
+    assign var4 True
+    if == var4 True
+        funccall print "#true!"
+    else
+        funccall "# false"
+    endif
+
+    if & True var4
+        funccall print "equal!"
+    else
+        funccall print "not equal"
+    endif
+    
+    if | var4 False
+        funccall print "or"
+    else
+        funccall print "nah"
+    endif
+
+    funccall print "end"
+endfunc

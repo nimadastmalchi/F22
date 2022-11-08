@@ -1,0 +1,37 @@
+func main
+  assign x % + * -2 -3 1 - 5 / 4 2
+  funccall print x
+  assign one 1
+  assign two 2
+  assign three 3
+  assign four + two two
+  assign a > + one two three
+  assign b < one four
+  assign c >= three + two one
+  assign d == 0 + % four three * -1 one
+  assign e != 0 + % four three * -1 one
+  funccall print a b c d e
+
+  assign x + + "first" + " second" "third" + " fourth" "fifth"
+  funccall print x
+  assign empty ""
+  assign short "zyxw"
+  assign long  "aaaaaaaabcd"
+  assign a > empty short
+  assign b != short "zyxw"
+  assign c == "" empty
+  assign d < long short
+  funccall print a b c d
+
+  assign bool_t True
+  assign bool_f False
+  assign a & bool_t bool_f
+  assign b & bool_f bool_t
+  assign c & bool_t bool_t
+  assign d | bool_f bool_f
+  assign e | bool_f bool_t
+  funccall print a b c d e
+
+  assign big_mega_expression & & == 0 + % four three * -1 one True & | bool_f | False | False | False | False True >= + short empty long
+  funccall print big_mega_expression
+endfunc

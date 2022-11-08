@@ -1,0 +1,24 @@
+# pass by reference
+func main void
+    var int a
+    assign a 10
+    funccall print "previous value of a should be 10: " a
+    funccall helper a
+    funccall print "value of a should be 1: " a
+endfunc
+
+func helper arg1:refint void
+    assign arg1 5
+    funccall helper2 arg1
+endfunc
+
+func helper2 arg2:refint void
+    funccall print "arg2 should be 5: " arg2
+    assign arg2 1
+    funccall helper3 arg2
+endfunc
+
+func helper3 arg3:int void
+    funccall print "arg3 should be 1: " arg3
+    assign arg3 0
+endfunc

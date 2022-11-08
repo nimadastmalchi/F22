@@ -1,0 +1,42 @@
+func main
+  if True
+    funccall print "this executes"
+  endif
+  funccall print "and flow of execution is unbroken"
+
+  if False
+    funccall print "this shouldn't have printed"
+  endif
+  funccall print "this should print immediately"
+
+  if True
+    funccall print "the happy case of if else executes"
+  else
+    funccall print "this shouldn't have printed"
+  endif
+  funccall print "and flow of execution continues"
+
+  if False
+    funccall print "this shouldn't have printed"
+  else
+    funccall print "the unhappy case of if else executes"
+  endif
+  funccall print "and flow of execution continues"
+
+  # mega test with full expressions and variables
+  assign bool_t True
+  if bool_t
+    funccall print "can branch on variables"
+    if >= 10 + -2 99
+      funccall print "this shouldn't have printed"
+    else
+      funccall print "and nested if else statements"
+      if bool_t
+        funccall print "with multiple layers"
+      endif
+      funccall print "but can"
+    endif
+    funccall print "return to"
+  endif
+  funccall print "correct execution order"
+endfunc

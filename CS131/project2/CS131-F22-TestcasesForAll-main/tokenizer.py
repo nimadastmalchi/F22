@@ -2,7 +2,7 @@
 # UCLA CS 131 Project 1
 # Brewin Tokenizer
 
-from intbase import InterpreterBase
+from intbase import InterpreterBase, ErrorType
 
 # Represents a constant expression (int, bool, or string)
 class Literal:
@@ -28,6 +28,7 @@ class Variable:
     # set this variable's type to type_str and set a default value according to
     # the type
     def __init__(self, type_str, referenced_var=None):
+        self.type_str = type_str
         if type_str == InterpreterBase.INT_DEF:
             self.type = Variable.Types.INT
             self.value = 0
@@ -59,29 +60,7 @@ class Line:
         return f"{self.__str__()}"
 
 
-# Represents function, while, and if blocks
-class Block:
-    class Types:
-        IF = 'if'
-        WHILE = 'while'
-        FUNCTION = 'func'
-
-    def __init__(self, tokens, start_line, end_line, indent, type, outer_block, else_line=None):
-        self.tokens = tokens
-        self.start_line = start_line
-        self.end_line = end_line
-        self.indent = indent
-        self.type = type
-        self.else_line = else_line
-        self.outer_block = outer_block
-        self.variables = {}
-    
-    def __str__(self):
-        return f"{self.tokens} ({self.start_line}:{self.end_line})"
-    
-    def __repr__(self) -> str:
-        return self.__str__()
-
+# Represents a scoped block in the program (while, if, or function)
 class Block:
     def __init__(self, tokens, start_line, end_line, indent, outer_block):
         self.tokens = tokens
@@ -109,10 +88,32 @@ class WhileBlock(Block):
 class FunctionBlock(Block):
     def __init__(self, tokens, start_line, end_line, indent, outer_block, params, return_type):
         super().__init__(tokens, start_line, end_line, indent, outer_block)
-        self.params = params
+        self.original_params = []
         for param in params:
-            self.variables[param[0]] = param[1]
+            self.original_params.append([param[0], Variable(param[1].type_str)])
+        self.stack = []
         self.return_type = return_type
+
+    def start_new_frame_params(self):
+        params = []
+        for original_param in self.original_params:
+            params.append([original_param[0], Variable(original_param[1].type_str)])
+        self.params = params
+        self.stack.append((self.params, {}))
+    
+    def start_new_frame_variables(self):
+        for param in self.params:
+            self.stack[-1][1][param[0]] = param[1]
+        self.variables = self.stack[-1][1]
+
+    def end_frame(self):
+        self.stack.pop()
+        if len(self.stack) > 0:
+            self.params = self.stack[-1][0]
+            self.variables = self.stack[-1][1]
+        else:
+            self.params = None
+            self.variables = None
 
 # @param lines     - list of strings such that element i is the i-th line of the program
 # @param functions - after this function call, functions maps all function names to

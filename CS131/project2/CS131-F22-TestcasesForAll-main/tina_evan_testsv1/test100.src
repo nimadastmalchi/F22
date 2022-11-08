@@ -1,0 +1,11 @@
+func main
+  # a comment on it's own line
+# a comment not tabbed out correctly
+          # an overly tabbed comment
+  assign one 1 # a normal well formatted commment
+  assign two 2 #a comment without space after
+  assign three 3# a comment without space before 
+  assign four 4#a comment without space before or after
+  assign five "A comment with a # char inside" # real comment
+  funccall print one two three four five
+endfunc

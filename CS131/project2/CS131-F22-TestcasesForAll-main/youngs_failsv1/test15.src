@@ -1,0 +1,6 @@
+func main
+    funccall print "hewwo world"
+    while 0 # should report this error!
+        uuuuuuuuuu # should not report this error...
+    endwhile
+endfunc

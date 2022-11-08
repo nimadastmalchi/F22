@@ -1,0 +1,21 @@
+# test passing by reference and passing constant
+func main void
+    var int a
+    assign a 10
+    funccall print "previous value of a: " a
+    var string b 
+    assign b "hi"
+    funccall print "previous value of b: " b
+    var bool c 
+    funccall print "previous value of c: " c
+    funccall helper a b c 0
+    funccall print "a should be 5: " a
+    funccall print "b should still be 'hi': " b
+    funccall print "c should be True: " c
+endfunc
+
+func helper arg1:refint arg2:string arg3:refbool arg4:int void
+    assign arg1 5
+    assign arg2 "bye"
+    assign arg3 True
+endfunc

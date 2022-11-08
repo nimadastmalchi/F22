@@ -1,0 +1,10 @@
+func main#valid comment?
+    funccall print "hi #"#hi
+    funccall strtoint "003"
+    funccall print result
+    if True
+        return
+    else
+        funccall print "in else"
+    endif
+endfunc

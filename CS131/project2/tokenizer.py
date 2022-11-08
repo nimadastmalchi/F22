@@ -1,6 +1,6 @@
 # Nima Amir Dastmalchi (505320372)
-# UCLA CS 131 Project 1
-# Brewin Tokenizer
+# UCLA CS 131 Project 2
+# Brewin++ Tokenizer
 
 from intbase import InterpreterBase, ErrorType
 
@@ -28,6 +28,7 @@ class Variable:
     # set this variable's type to type_str and set a default value according to
     # the type
     def __init__(self, type_str, referenced_var=None):
+        self.type_str = type_str
         if type_str == InterpreterBase.INT_DEF:
             self.type = Variable.Types.INT
             self.value = 0
@@ -87,10 +88,32 @@ class WhileBlock(Block):
 class FunctionBlock(Block):
     def __init__(self, tokens, start_line, end_line, indent, outer_block, params, return_type):
         super().__init__(tokens, start_line, end_line, indent, outer_block)
-        self.params = params
+        self.original_params = []
         for param in params:
-            self.variables[param[0]] = param[1]
+            self.original_params.append([param[0], Variable(param[1].type_str)])
+        self.stack = []
         self.return_type = return_type
+
+    def start_new_frame_params(self):
+        params = []
+        for original_param in self.original_params:
+            params.append([original_param[0], Variable(original_param[1].type_str)])
+        self.params = params
+        self.stack.append((self.params, {}))
+    
+    def start_new_frame_variables(self):
+        for param in self.params:
+            self.stack[-1][1][param[0]] = param[1]
+        self.variables = self.stack[-1][1]
+
+    def end_frame(self):
+        self.stack.pop()
+        if len(self.stack) > 0:
+            self.params = self.stack[-1][0]
+            self.variables = self.stack[-1][1]
+        else:
+            self.params = None
+            self.variables = None
 
 # @param lines     - list of strings such that element i is the i-th line of the program
 # @param functions - after this function call, functions maps all function names to

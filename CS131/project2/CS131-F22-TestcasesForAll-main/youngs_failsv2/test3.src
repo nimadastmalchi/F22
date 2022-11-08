@@ -1,0 +1,7 @@
+func main void
+    funccall foo 1 1
+endfunc
+
+func foo a:int void
+    funccall print a
+endfunc

@@ -1,0 +1,10 @@
+#make sure function variable is out of scope
+func main void
+    funccall helper
+    funccall print a
+endfunc
+
+func helper void
+    var int a
+    funccall print a
+endfunc

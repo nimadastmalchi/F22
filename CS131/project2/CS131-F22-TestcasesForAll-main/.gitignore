@@ -132,5 +132,12 @@ dmypy.json
 .DS_Store
 
 # grader-specific files
-interpreter*
+*v2*.py
+*v3*.py
 results.json
+
+# all python, except test scripts
+*.py
+!harness.py
+!intbase.py
+!tester.py

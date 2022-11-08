@@ -1,0 +1,17 @@
+should have skipped directly to endwhile
+on this itteration: i=0
+on this itteration: i=1
+on this itteration: i=2
+on this itteration: i=3
+on this itteration: i=4
+can return to normal flow of execution
+on this itteration (i,j) are 00
+on this itteration (i,j) are 01
+on this itteration (i,j) are 02
+broke out of inner while j=3
+on this itteration (i,j) are 11
+on this itteration (i,j) are 12
+broke out of inner while j=3
+on this itteration (i,j) are 22
+broke out of inner while j=3
+broke out of outer while i=3

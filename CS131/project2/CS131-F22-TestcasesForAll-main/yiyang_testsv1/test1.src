@@ -1,0 +1,14 @@
+# testing while-if-else-return
+func main
+  assign i 0
+  while < i 2 
+    funccall print "While: " i
+        if == i 1
+            funccall print i
+        else
+            return
+        endif
+    assign i + i 1
+  endwhile
+  funccall print i
+endfunc

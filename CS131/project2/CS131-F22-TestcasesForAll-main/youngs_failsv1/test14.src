@@ -1,0 +1,6 @@
+func main
+    funccall print "hewwo world"
+    if 1
+        funccall print "uwu???"
+    endif
+endfunc
