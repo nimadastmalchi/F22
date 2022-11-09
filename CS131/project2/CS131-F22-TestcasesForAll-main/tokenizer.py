@@ -1,6 +1,6 @@
 # Nima Amir Dastmalchi (505320372)
-# UCLA CS 131 Project 1
-# Brewin Tokenizer
+# UCLA CS 131 Project 2
+# Brewin++ Tokenizer
 
 from intbase import InterpreterBase, ErrorType
 
@@ -45,6 +45,11 @@ class Variable:
         elif type_str == InterpreterBase.REFSTRING_DEF:
             self.type = Variable.Types.REFSTRING
 
+    def __str__(self):
+        return f"{self.value}"
+
+    def __repr__(self):
+        return f"{self.__str__()}"
 
 # Represents a single executable line of the program
 class Line:

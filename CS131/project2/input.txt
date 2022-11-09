@@ -16,6 +16,6 @@ func fib n:int int
 endfunc
 
 func main void
-  funccall fib 15
+  funccall fib 50
   funccall print resulti
 endfunc

@@ -197,9 +197,20 @@ class Interpreter(InterpreterBase):
                 lr = self.ip
                 # evaluate the function:
                 self.ip = func.start_line + 1
+                # Temporary class to hold the variables of previous frame in case
+                # we are calling the same function recursively. This is useful for
+                # when we want to access variables of previous stack frame to set
+                # the resultx local variable.
+                class Variablable:
+                    def __init__(self, variables):
+                        self.variables = variables
+                varable = Variablable(func.variables)
                 func.start_new_frame_variables()
                 while self.ip != func.end_line:
-                    self.interpret(func, func, current_function)
+                    if func is current_function:
+                        self.interpret(func, func, varable)
+                    else:
+                        self.interpret(func, func, current_function)
                 func.end_frame()
                 # TODO need to somehow keep track of multiple variables of functions
                 # set self.ip to address to return to:
