@@ -1,0 +1,80 @@
+func myFunction
+  funccall print "myFunction"
+endfunc
+
+func myFuNCTioN
+  funccall print "myFuNCTioN"
+endfunc
+
+func empty
+endfunc
+
+func earlyReturn
+  if True
+    return "we early returned"
+  else
+    funccall print "should not be printed"
+  endif
+endfunc
+
+func noOPReturn
+  return
+  funccall print "should not be printed"
+endfunc
+
+func returnVar
+  assign x 10
+  return x
+endfunc
+
+func returnExpBool
+  return >= 3 2
+endfunc
+
+func returnExpInt
+  return + 1 + 2 + 3 + 4 5
+endfunc
+
+func returnExpString
+  return + "a return" " string"
+endfunc
+
+func touchGlobalVar
+  assign globalVar + 1 globalVar
+endfunc
+
+func newGlobalVar
+  assign aNewGlobalVar 3
+endfunc
+
+func reflectGlobalVar
+  return globalVar
+endfunc
+
+func main
+  assign globalVar 8
+  funccall print globalVar
+  funccall myFunction
+  funccall myFuNCTioN
+  assign result 9
+  funccall print result
+  funccall empty
+  funccall print result
+  funccall earlyReturn
+  funccall print result
+  funccall noOPReturn
+  funccall returnVar
+  funccall print result
+  funccall returnExpBool
+  funccall print result
+  funccall returnExpInt
+  funccall print result
+  funccall returnExpString
+  funccall print result
+  funccall touchGlobalVar
+  funccall print globalVar
+  funccall reflectGlobalVar
+  funccall print result
+  funccall newGlobalVar
+  funccall print aNewGlobalVar
+endfunc

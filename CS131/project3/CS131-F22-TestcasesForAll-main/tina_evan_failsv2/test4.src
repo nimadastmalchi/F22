@@ -1,0 +1,12 @@
+# cannot have variable with same name as parameter
+func main void
+    var int a
+    assign a 10
+    funccall print "previous value of a: " a
+    funccall helper a
+endfunc
+
+func helper arg1:int void
+    var int arg1
+    assign arg1 0
+endfunc

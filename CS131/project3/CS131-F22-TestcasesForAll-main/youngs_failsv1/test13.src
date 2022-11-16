@@ -1,0 +1,8 @@
+func main
+    funccall nope
+    assign x + 1 "str" # bad
+endfunc
+
+func yep
+    funccall print "uwu?"
+endfunc

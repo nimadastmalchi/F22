@@ -1,0 +1,141 @@
+# testing arithmetic expression operations
+func main
+  funccall add
+  funccall print result
+  funccall minus
+  funccall print result
+  funccall mult
+  funccall print result
+  funccall div
+  funccall print result
+  funccall mod
+  funccall print result
+  funccall less1
+  funccall print result
+  funccall less2
+  funccall print result
+  funccall greater1
+  funccall print result
+  funccall greater2
+  funccall print result
+  funccall less_eq1
+  funccall print result
+  funccall less_eq2
+  funccall print result
+  funccall less_eq3
+  funccall print result
+  funccall greater_eq1
+  funccall print result
+  funccall greater_eq2
+  funccall print result
+  funccall greater_eq3
+  funccall print result
+  funccall neq1
+  funccall print result
+  funccall neq2
+  funccall print result
+
+endfunc
+
+func add
+    assign a 10
+    assign b -10
+    return + a b
+endfunc
+
+func minus
+    assign a 10
+    assign b -10
+    return - a b
+endfunc
+
+func mult
+    assign a 10
+    assign b -10
+    return * a b
+endfunc
+
+func div
+    assign a 10
+    assign b 7
+    return / 10 7
+endfunc
+
+func mod
+    assign a 10
+    assign b 7
+    return % a b
+endfunc
+
+func less1
+    assign a 10
+    assign b -10
+    return < a b
+endfunc
+
+func less2
+    assign a 10
+    assign b -10
+    return < b a
+endfunc
+
+func greater1
+    assign a 10
+    assign b -10
+    return > a b
+endfunc
+
+func greater2
+    assign a 10
+    assign b -10
+    return > b a
+endfunc
+
+func less_eq1
+    assign a 10
+    assign b -10
+    return <= a b
+endfunc
+
+func less_eq2
+    assign a 10
+    assign b -10
+    return <= b a
+endfunc
+
+func less_eq3
+    assign a 10
+    assign b 10
+    return <= b a
+endfunc
+
+func greater_eq1
+    assign a 10
+    assign b -10
+    return >= a b
+endfunc
+
+func greater_eq2
+    assign a 10
+    assign b -10
+    return >= b a
+endfunc
+
+func greater_eq3
+    assign a 10
+    assign b 10
+    return >= b a
+endfunc
+
+func neq1
+    assign a 10
+    assign b -10
+    return != a b
+endfunc
+
+func neq2
+    assign a 10
+    assign b 10
+    return != a b
+endfunc
+

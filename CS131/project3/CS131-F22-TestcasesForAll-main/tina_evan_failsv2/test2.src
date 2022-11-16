@@ -1,0 +1,11 @@
+# can't redefine variable in the same block
+func main void
+    var string a 
+    assign a "hi"
+    if > 1 0
+        var int b
+        funccall print b
+    endif
+    var bool a
+    funccall print a
+endfunc

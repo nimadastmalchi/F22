@@ -1,0 +1,16 @@
+# tests multiple updates to PBR values
+
+func bar n:refint void
+    assign n + n 2
+endfunc
+
+func foo n:refint void
+    funccall bar n
+    funccall bar n
+endfunc
+
+func main void
+    var int n
+    funccall foo n
+    funccall print n
+endfunc

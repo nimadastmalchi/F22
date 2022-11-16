@@ -1,0 +1,11 @@
+func hi
+    funccall print "should not print"
+    return 5
+endfunc
+
+func main
+    funccall print "hi"
+    return
+    funccall hi
+    funccall print result
+endfunc

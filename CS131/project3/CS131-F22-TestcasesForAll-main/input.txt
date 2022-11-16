@@ -16,10 +16,6 @@ func fib n:int int
 endfunc
 
 func main void
-  var func x y z
-  funccall y
-  funccall z
-  assign x fib
-  funccall x 10
+  funccall fib 10
   funccall print resulti
 endfunc

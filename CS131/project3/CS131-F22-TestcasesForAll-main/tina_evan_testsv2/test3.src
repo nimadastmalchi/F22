@@ -1,0 +1,16 @@
+# try nested if statements for shadowing
+func main void
+    var int a
+    assign a 5
+    if > a 0
+        funccall print a
+        var string a
+        assign a "hi"
+        funccall print a
+        if True
+            var bool a
+            funccall print a
+        endif
+    endif
+    funccall print a
+endfunc

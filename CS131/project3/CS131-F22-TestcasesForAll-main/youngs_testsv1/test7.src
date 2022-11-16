@@ -1,0 +1,20 @@
+func main 
+
+  funccall print 5 5 5
+  assign x -5 
+  assign x + x 1
+  funccall uwu
+  assign x result
+  funccall print x
+endfunc
+ 
+func uwu
+  assign u + "UwU" " OvO"
+  funccall awa
+  return u
+endfunc
+ 
+func awa
+  return
+  assign m aaaaa # has an error but returned early
+endfunc

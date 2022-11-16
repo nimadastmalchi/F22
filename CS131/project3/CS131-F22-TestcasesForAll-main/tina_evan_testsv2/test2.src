@@ -1,0 +1,10 @@
+#testing shadowing
+func main void
+    var string a 
+    assign a "hi"
+    if > 1 0
+        var int a
+        funccall print a
+    endif
+    funccall print a
+endfunc

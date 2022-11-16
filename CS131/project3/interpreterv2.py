@@ -5,12 +5,15 @@ from func_v2 import FunctionManager
 from intbase import InterpreterBase, ErrorType
 from tokenize import Tokenizer
 
+DEFAULT_FUNCTION_DEF = '__default_function_def'
+
 # Enumerated type for our different language data types
 class Type(Enum):
   INT = 1
   BOOL = 2
   STRING = 3
   VOID = 4
+  FUNC = 5
 
 # Represents a value, which has a type and its value
 class Value:
@@ -41,7 +44,6 @@ class Interpreter(InterpreterBase):
     self.program = program
     self._compute_indentation(program)  # determine indentation of every line
     self.tokenized_program = Tokenizer.tokenize_program(program)
-    print(self.tokenized_program)
     self.func_manager = FunctionManager(self.tokenized_program)
     self.ip = self.func_manager.get_function_info(InterpreterBase.MAIN_FUNC).start_ip
     self.return_stack = []
@@ -83,6 +85,10 @@ class Interpreter(InterpreterBase):
         self._endwhile(args)
       case InterpreterBase.VAR_DEF: # v2 statements
         self._define_var(args)
+      case InterpreterBase.LAMBDA_DEF:
+        pass
+      case InterpreterBase.ENDLAMBDA_DEF:
+        pass
       case default:
         raise Exception(f'Unknown command: {tokens[0]}')
 
@@ -115,9 +121,20 @@ class Interpreter(InterpreterBase):
       self._strtoint(args[1:])
       self._advance_to_next_statement()
     else:
-      self.return_stack.append(self.ip+1)
-      self._create_new_environment(args[0], args[1:])  # Create new environment, copy args into new env
-      self.ip = self._find_first_instruction(args[0])
+      val = self._get_value(args[0])
+      if val is not None and val.type() == Type.FUNC:
+        if val.value() == DEFAULT_FUNCTION_DEF:
+          if len(args) != 1:
+            super().error(ErrorType.NAME_ERROR,f"Mismatched parameter count in call to {args[0]}", self.ip)
+          self.ip += 1
+          return
+        self.return_stack.append(self.ip+1)
+        self._create_new_environment(val.value(), args[1:])
+        self.ip = self._find_first_instruction(val.value())
+      else:
+        self.return_stack.append(self.ip+1)
+        self._create_new_environment(args[0], args[1:])  # Create new environment, copy args into new env
+        self.ip = self._find_first_instruction(args[0])
 
   # create a new environment for a function call
   def _create_new_environment(self, funcname, args):
@@ -311,8 +328,9 @@ class Interpreter(InterpreterBase):
     self.type_to_default = {}
     self.type_to_default[InterpreterBase.INT_DEF] = Value(Type.INT,0)
     self.type_to_default[InterpreterBase.STRING_DEF] = Value(Type.STRING,'')
-    self.type_to_default[InterpreterBase.BOOL_DEF] = Value(Type.BOOL,False)
-    self.type_to_default[InterpreterBase.VOID_DEF] = Value(Type.VOID,None)
+    self.type_to_default[InterpreterBase.BOOL_DEF] = Value(Type.BOOL, False)
+    self.type_to_default[InterpreterBase.VOID_DEF] = Value(Type.VOID, None)
+    self.type_to_default[InterpreterBase.FUNC_DEF] = Value(Type.FUNC, DEFAULT_FUNCTION_DEF) # TODO add this to function cache
 
     # set up what types are compatible with what other types
     self.compatible_types = {}
@@ -389,6 +407,10 @@ class Interpreter(InterpreterBase):
     val = self.env_manager.get(token)
     if val != None:
       return val
+    
+    if self.func_manager.is_function(token):
+      return Value(Type.FUNC, token)
+  
     # not found
     super().error(ErrorType.NAME_ERROR,f"Unknown variable {token}", self.ip)
 

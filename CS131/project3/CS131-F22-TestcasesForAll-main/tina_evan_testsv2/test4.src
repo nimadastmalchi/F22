@@ -1,0 +1,10 @@
+# try while loops
+func main void
+    var int a
+    assign a 5
+    while > a 0
+        funccall print a
+        assign a - a 1
+    endwhile
+    funccall print a
+endfunc
