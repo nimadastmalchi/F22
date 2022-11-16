@@ -21,6 +21,7 @@ func main void
     funccall print x
   endlambda
   funccall resultf 20
+  funccall print resultb
   var func x y z
   funccall y
   funccall z
