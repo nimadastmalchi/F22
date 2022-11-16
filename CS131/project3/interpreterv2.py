@@ -1,7 +1,7 @@
 import copy
 from enum import Enum
 from env_v2 import EnvironmentManager, SymbolResult
-from func_v2 import FunctionManager
+from func_v2 import FunctionManager, FuncInfo
 from intbase import InterpreterBase, ErrorType
 from tokenize import Tokenizer
 
@@ -86,9 +86,9 @@ class Interpreter(InterpreterBase):
       case InterpreterBase.VAR_DEF: # v2 statements
         self._define_var(args)
       case InterpreterBase.LAMBDA_DEF:
-        pass
+        self._lambda()
       case InterpreterBase.ENDLAMBDA_DEF:
-        pass
+        self._endlambda()
       case default:
         raise Exception(f'Unknown command: {tokens[0]}')
 
@@ -280,6 +280,15 @@ class Interpreter(InterpreterBase):
     # didn't find while
     super().error(ErrorType.SYNTAX_ERROR,"Missing while", self.ip)
 
+  def _lambda(self):
+    self._set_result(Value(Type.FUNC, FunctionManager.create_lambda_name(self.ip)))
+    cur_line = self.ip + 1
+    while self.indents[cur_line] != self.indents[self.ip]:
+      cur_line += 1
+    self.ip = cur_line + 1
+
+  def _endlambda(self):
+    self._endfunc()
 
   def _define_var(self, args):
     if len(args) < 2:
@@ -348,6 +357,7 @@ class Interpreter(InterpreterBase):
     self.type_to_result[Type.INT] = 'i'
     self.type_to_result[Type.STRING] = 's'
     self.type_to_result[Type.BOOL] = 'b'
+    self.type_to_result[Type.FUNC] = 'f'
 
   # run a program, provided in an array of strings, one string per line of source code
   def _setup_operations(self):

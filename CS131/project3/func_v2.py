@@ -49,8 +49,19 @@ class FunctionManager:
         func_info = FuncInfo(params, line_num + 1)  # function starts executing on line after funcdef
         self.func_cache[func_name] = func_info
         return_type_stack.append(line[-1])
+      
+      if line and line[0] == InterpreterBase.LAMBDA_DEF:
+        # format: lambda p1:t1 p2:t2 ... return_type
+        func_name = FunctionManager.create_lambda_name(line_num)
+        params = [self._to_tuple(formal) for formal in line[1:-1]]
+        func_info = FuncInfo(params, line_num + 1)
+        self.func_cache[func_name] = func_info
+        return_type_stack.append(line[-1])
 
       if line and line[0] == InterpreterBase.ENDFUNC_DEF:
+        reset_after_this_line = True
+
+      if line and line[0] == InterpreterBase.ENDLAMBDA_DEF:
         reset_after_this_line = True
 
       self.return_types.append(return_type_stack[-1])  # each line in the program is assigned a return type based on
@@ -59,3 +70,4 @@ class FunctionManager:
       if reset_after_this_line:                  # for each line with a funcend, make sure we know the return type
         return_type_stack.pop()
         reset_after_this_line = False
+    

@@ -16,6 +16,11 @@ func fib n:int int
 endfunc
 
 func main void
+  lambda x:int bool
+    var int a
+    funccall print x
+  endlambda
+  funccall resultf 20
   var func x y z
   funccall y
   funccall z
