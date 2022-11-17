@@ -128,6 +128,8 @@ class Interpreter(InterpreterBase):
             super().error(ErrorType.NAME_ERROR,f"Mismatched parameter count in call to {args[0]}", self.ip)
           self.ip += 1
           return
+        # TODO check if the function is a lambda. If so, copy current environment
+        # (or ref variables instead)
         self.return_stack.append(self.ip+1)
         self._create_new_environment(val.value(), args[1:])
         self.ip = self._find_first_instruction(val.value())

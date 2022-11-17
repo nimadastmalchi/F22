@@ -15,10 +15,23 @@ func fib n:int int
   return res
 endfunc
 
+func ret_func func
+  lambda void
+    funccall print "lambda"
+  endlambda
+  return resultf
+endfunc
+
 func main void
+  funccall ret_func
+  funccall resultf
   lambda x:int bool
     var int a
     funccall print x
+    lambda void
+      funccall print "nested function"
+    endlambda
+    funccall resultf
   endlambda
   funccall resultf 20
   funccall print resultb
