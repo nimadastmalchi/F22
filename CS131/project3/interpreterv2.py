@@ -14,6 +14,7 @@ class Type(Enum):
   STRING = 3
   VOID = 4
   FUNC = 5
+  OBJECT = 6
 
 # Represents a value, which has a type and its value
 class Value:
@@ -128,10 +129,11 @@ class Interpreter(InterpreterBase):
             super().error(ErrorType.NAME_ERROR,f"Mismatched parameter count in call to {args[0]}", self.ip)
           self.ip += 1
           return
-        # TODO check if the function is a lambda. If so, copy current environment
-        # (or ref variables instead)
         self.return_stack.append(self.ip+1)
         self._create_new_environment(val.value(), args[1:])
+        func_info = self.func_manager.get_function_info(val.value())
+        if func_info.captures is not None:
+          self.env_manager.environment[-1] += func_info.captures + [{}]
         self.ip = self._find_first_instruction(val.value())
       else:
         self.return_stack.append(self.ip+1)
@@ -283,11 +285,15 @@ class Interpreter(InterpreterBase):
     super().error(ErrorType.SYNTAX_ERROR,"Missing while", self.ip)
 
   def _lambda(self):
-    self._set_result(Value(Type.FUNC, FunctionManager.create_lambda_name(self.ip)))
+    lambda_line = self.ip
+    func_info = self.func_manager.get_function_info(FunctionManager.create_lambda_name(self.ip))
     cur_line = self.ip + 1
     while self.indents[cur_line] != self.indents[self.ip]:
       cur_line += 1
     self.ip = cur_line + 1
+    captures = self.env_manager.get_current_frame_copy()
+    func_info.captures = captures
+    self._set_result(Value(Type.FUNC, FunctionManager.create_lambda_name(lambda_line)))
 
   def _endlambda(self):
     self._endfunc()
@@ -341,13 +347,16 @@ class Interpreter(InterpreterBase):
     self.type_to_default[InterpreterBase.STRING_DEF] = Value(Type.STRING,'')
     self.type_to_default[InterpreterBase.BOOL_DEF] = Value(Type.BOOL, False)
     self.type_to_default[InterpreterBase.VOID_DEF] = Value(Type.VOID, None)
-    self.type_to_default[InterpreterBase.FUNC_DEF] = Value(Type.FUNC, DEFAULT_FUNCTION_DEF) # TODO add this to function cache
+    self.type_to_default[InterpreterBase.FUNC_DEF] = Value(Type.FUNC, DEFAULT_FUNCTION_DEF)
+    self.type_to_default[InterpreterBase.OBJECT_DEF] = Value(Type.OBJECT, dict())
 
     # set up what types are compatible with what other types
     self.compatible_types = {}
     self.compatible_types[InterpreterBase.INT_DEF] = Type.INT
     self.compatible_types[InterpreterBase.STRING_DEF] = Type.STRING
     self.compatible_types[InterpreterBase.BOOL_DEF] = Type.BOOL
+    self.compatible_types[InterpreterBase.FUNC_DEF] = Type.FUNC
+    self.compatible_types[InterpreterBase.OBJECT_DEF] = Type.OBJECT
     self.compatible_types[InterpreterBase.REFINT_DEF] = Type.INT
     self.compatible_types[InterpreterBase.REFSTRING_DEF] = Type.STRING
     self.compatible_types[InterpreterBase.REFBOOL_DEF] = Type.BOOL
@@ -360,6 +369,7 @@ class Interpreter(InterpreterBase):
     self.type_to_result[Type.STRING] = 's'
     self.type_to_result[Type.BOOL] = 'b'
     self.type_to_result[Type.FUNC] = 'f'
+    self.type_to_result[Type.OBJECT] = 'o'
 
   # run a program, provided in an array of strings, one string per line of source code
   def _setup_operations(self):

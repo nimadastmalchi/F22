@@ -1,44 +1,17 @@
-# recursive fibonacci :)
-# this might take a bit of time! 
-
-func fib n:int int
-  if <= n 1
-    return n
-  endif
-  var int n1 n2 res
-  assign n1 - n 1
-  assign n2 - n 2
-  funccall fib n1
-  assign res + res resulti
-  funccall fib n2
-  assign res + res resulti
-  return res
-endfunc
-
-func ret_func func
-  lambda void
-    funccall print "lambda"
-  endlambda
-  return resultf
-endfunc
-
 func main void
-  funccall ret_func
-  funccall resultf
-  lambda x:int bool
-    var int a
-    funccall print x
-    lambda void
-      funccall print "nested function"
-    endlambda
-    funccall resultf
-  endlambda
-  funccall resultf 20
-  funccall print resultb
-  var func x y z
-  funccall y
-  funccall z
-  assign x fib
-  funccall x 10
-  funccall print resulti
+ var int capture_me
+ assign capture_me 42
+
+ if > capture_me 10
+   var int capture_me
+   assign capture_me 1000
+   lambda a:int int
+    return + a capture_me	# the captured capture_me’s value is 1000
+   endlambda
+ endif
+
+ var func f
+ assign f resultf
+ funccall f 10
+ funccall print resulti		# prints 1010
 endfunc

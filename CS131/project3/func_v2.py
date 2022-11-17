@@ -1,9 +1,10 @@
 from intbase import InterpreterBase
 
 class FuncInfo:
-  def __init__(self, params, start_ip):
+  def __init__(self, params, start_ip, captures = None):
     self.params = params  # format is [[varname1,typename1],[varname2,typename2],...]
     self.start_ip = start_ip    # line number, zero-based
+    self.captures = captures
 
 class FunctionManager:
   def __init__(self, tokenized_program):

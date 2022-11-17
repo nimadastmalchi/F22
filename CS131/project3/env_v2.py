@@ -1,4 +1,5 @@
 from enum import Enum
+import copy
 
 class SymbolResult(Enum):
   OK = 0     # symbol created, didn't exist in top scope
@@ -66,3 +67,6 @@ class EnvironmentManager:
 
   def pop(self):
     self.environment.pop()
+
+  def get_current_frame_copy(self):
+    return copy.deepcopy(self.environment[-1])
