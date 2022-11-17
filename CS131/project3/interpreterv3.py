@@ -1,7 +1,7 @@
 import copy
 from enum import Enum
-from env_v2 import EnvironmentManager, SymbolResult
-from func_v2 import FunctionManager, FuncInfo
+from env_v3 import EnvironmentManager, SymbolResult
+from func_v3 import FunctionManager, FuncInfo
 from intbase import InterpreterBase, ErrorType
 from tokenize import Tokenizer
 
@@ -100,13 +100,26 @@ class Interpreter(InterpreterBase):
    if len(tokens) < 2:
      super().error(ErrorType.SYNTAX_ERROR,"Invalid assignment statement")
    vname = tokens[0]
-   value_type = self._eval_expression(tokens[1:])
-   existing_value_type = self._get_value(tokens[0])
-   if existing_value_type.type() != value_type.type():
-     super().error(ErrorType.TYPE_ERROR,
-                   f"Trying to assign a variable of {existing_value_type.type()} to a value of {value_type.type()}",
-                   self.ip)
-   self._set_value(tokens[0], value_type)
+   if '.' in vname:
+     lst = vname.split('.')
+     root_obj = lst[0]
+     root_val_type = self._get_value(root_obj)
+     if root_val_type.type() != Type.OBJECT:
+       super().error(ErrorType.TYPE_ERROR, "Trying to use '.' on non-object", self.ip)
+     cur_obj = root_val_type.value()
+     for member in lst[1:-1]:
+       if member not in cur_obj:
+         super().error(ErrorType.NAME_ERROR, f"{member} not in object", self.ip)
+       cur_obj = cur_obj[member].value()
+     cur_obj[lst[-1]] = self._eval_expression(tokens[1:])
+   else:
+    value_type = self._eval_expression(tokens[1:])
+    existing_value_type = self._get_value(tokens[0])
+    if existing_value_type.type() != value_type.type():
+      super().error(ErrorType.TYPE_ERROR,
+                    f"Trying to assign a variable of {existing_value_type.type()} to a value of {value_type.type()}",
+                    self.ip)
+    self._set_value(tokens[0], value_type)
    self._advance_to_next_statement()
 
   def _funccall(self, args):
@@ -123,6 +136,8 @@ class Interpreter(InterpreterBase):
       self._advance_to_next_statement()
     else:
       val = self._get_value(args[0])
+      if '.' in args[0]:
+        root_obj = self._get_value(args[0].split('.')[0])
       if val is not None and val.type() == Type.FUNC:
         if val.value() == DEFAULT_FUNCTION_DEF:
           if len(args) != 1:
@@ -134,6 +149,11 @@ class Interpreter(InterpreterBase):
         func_info = self.func_manager.get_function_info(val.value())
         if func_info.captures is not None:
           self.env_manager.environment[-1] += func_info.captures + [{}]
+
+        # inject this
+        if '.' in args[0]:
+          self.env_manager.environment[-1][-1][InterpreterBase.THIS_DEF] = root_obj
+        
         self.ip = self._find_first_instruction(val.value())
       else:
         self.return_stack.append(self.ip+1)
@@ -144,7 +164,11 @@ class Interpreter(InterpreterBase):
   def _create_new_environment(self, funcname, args):
     formal_params = self.func_manager.get_function_info(funcname)
     if formal_params is None:
-        super().error(ErrorType.NAME_ERROR, f"Unknown function name {funcname}", self.ip)
+        #TODO
+        if '.' in funcname:
+          super().error(ErrorType.TYPE_ERROR, f"Not a function {funcname}", self.ip)
+        else:
+          super().error(ErrorType.NAME_ERROR, f"Unknown function name {funcname}", self.ip)
 
     if len(formal_params.params) != len(args):
       super().error(ErrorType.NAME_ERROR,f"Mismatched parameter count in call to {funcname}", self.ip)
@@ -424,6 +448,17 @@ class Interpreter(InterpreterBase):
       return Value(Type.INT, int(token))
     if token == InterpreterBase.TRUE_DEF or token == Interpreter.FALSE_DEF:
       return Value(Type.BOOL, token == InterpreterBase.TRUE_DEF)
+    if '.' in token:
+      lst = token.split('.')
+      root_val_type = self.env_manager.get(lst[0])
+      cur_obj = root_val_type.value()
+      cur_val_type = root_val_type
+      for member in lst[1:]:
+        if member not in cur_obj:
+          super().error(ErrorType.NAME_ERROR, f"{member} not in object", self.ip)
+        cur_val_type = cur_obj[member]
+        cur_obj = cur_obj[member].value()
+      return cur_val_type
 
     # look in environments for variable
     val = self.env_manager.get(token)

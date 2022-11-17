@@ -1,5 +1,5 @@
 from re import A
-from interpreterv2 import Interpreter
+from interpreterv3 import Interpreter
 
 f = open('input.txt')
 program = []
