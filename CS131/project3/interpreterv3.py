@@ -18,9 +18,10 @@ class Type(Enum):
 
 # Represents a value, which has a type and its value
 class Value:
-  def __init__(self, type, value = None):
+  def __init__(self, type, value = None, captures = None):
     self.t = type
     self.v = value
+    self.captures = captures
 
   def value(self):
     return self.v
