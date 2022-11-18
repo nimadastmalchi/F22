@@ -1,9 +1,0 @@
-# check default values
-func main void
-    var string a
-    var bool b
-    var int c
-    funccall print "String: " a
-    funccall print "Bool: " b
-    funccall print "Int: " c
-endfunc

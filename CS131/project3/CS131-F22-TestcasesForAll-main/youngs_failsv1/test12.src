@@ -1,4 +1,0 @@
-func main
-    funccall print "hewwo world"
-    assign x + 1 "str" # bad
-endfunc

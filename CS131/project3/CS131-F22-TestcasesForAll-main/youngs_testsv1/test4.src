@@ -1,8 +1,0 @@
-func main
-  assign x -00123
-  funccall print x
-  funccall input "uwu?"
-  funccall strtoint result
-  assign b == result -233
-  funccall print b x "fooo"#bar
-endfunc

@@ -1,0 +1,33 @@
+
+template <typename T>
+struct Optional<T> {
+T *value;
+};
+
+Optional<int> firstIndexA(int arr[], int size, int n) {
+    Optional<int> o;
+    o.value = nullptr;
+    return o;
+}
+
+int firstIndexB(int arr[], int size, int n) {
+    return 10;
+}
+
+int main() {
+
+    auto optional = firstIndexA(arr, size, n);
+    if (optional.value == nullptr) {
+        // Handle failure
+    } else {
+        int index = *optional.value;
+        // Handle success
+    }
+
+    try {
+        int index = *firstIndexB(arr, size, n);
+    } catch(std::exception& e) {
+        // Handle error
+    }
+}
+

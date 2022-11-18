@@ -1,3 +1,0 @@
-func main
-    assign val % "string" "hi"
-endfunc
