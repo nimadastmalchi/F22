@@ -18,10 +18,9 @@ class Type(Enum):
 
 # Represents a value, which has a type and its value
 class Value:
-  def __init__(self, type, value = None, captures = None):
+  def __init__(self, type, value = None):
     self.t = type
     self.v = value
-    self.captures = captures
 
   def value(self):
     return self.v
@@ -102,17 +101,22 @@ class Interpreter(InterpreterBase):
      super().error(ErrorType.SYNTAX_ERROR,"Invalid assignment statement")
    vname = tokens[0]
    if '.' in vname:
+     #print(self.env_manager.environment)
      lst = vname.split('.')
-     root_obj = lst[0]
-     root_val_type = self._get_value(root_obj)
-     if root_val_type.type() != Type.OBJECT:
-       super().error(ErrorType.TYPE_ERROR, "Trying to use '.' on non-object", self.ip)
-     cur_obj = root_val_type.value()
-     for member in lst[1:-1]:
-       if member not in cur_obj:
-         super().error(ErrorType.NAME_ERROR, f"{member} not in object", self.ip)
-       cur_obj = cur_obj[member].value()
-     cur_obj[lst[-1]] = self._eval_expression(tokens[1:])
+     root_value_type = self._get_value(lst[0])
+     if root_value_type.type() != Type.OBJECT:
+        super().error(ErrorType.TYPE_ERROR, f"object assignment on non-object", self.ip)
+     root_value_type.value()[lst[1]] = self._eval_expression(tokens[1:])
+      #  root_obj = lst[0]
+      #  root_val_type = self._get_value(root_obj)
+      #  if root_val_type.type() != Type.OBJECT:
+      #    super().error(ErrorType.TYPE_ERROR, "Trying to use '.' on non-object", self.ip)
+      #  cur_obj = root_val_type.value()
+      #  for member in lst[1:-1]:
+      #    if member not in cur_obj:
+      #      super().error(ErrorType.NAME_ERROR, f"{member} not in object", self.ip)
+      #    cur_obj = cur_obj[member].value()
+      #  cur_obj[lst[-1]] = self._eval_expression(tokens[1:])
    else:
     value_type = self._eval_expression(tokens[1:])
     existing_value_type = self._get_value(tokens[0])
@@ -145,17 +149,22 @@ class Interpreter(InterpreterBase):
             super().error(ErrorType.NAME_ERROR,f"Mismatched parameter count in call to {args[0]}", self.ip)
           self.ip += 1
           return
+        if type(val.value()) is tuple:
+          func_name = val.value()[0]
+          captures = val.value()[1]
+        else:
+          func_name = val.value()
+          captures = None
         self.return_stack.append(self.ip+1)
-        self._create_new_environment(val.value(), args[1:])
-        func_info = self.func_manager.get_function_info(val.value())
-        if func_info.captures is not None:
-          self.env_manager.environment[-1] += func_info.captures + [{}]
+        self._create_new_environment(func_name, args[1:])
+        if captures is not None:
+          self.env_manager.environment[-1] += captures + [{}]
 
         # inject this
         if '.' in args[0]:
           self.env_manager.environment[-1][-1][InterpreterBase.THIS_DEF] = root_obj
         
-        self.ip = self._find_first_instruction(val.value())
+        self.ip = self._find_first_instruction(func_name)
       else:
         self.return_stack.append(self.ip+1)
         self._create_new_environment(args[0], args[1:])  # Create new environment, copy args into new env
@@ -311,14 +320,12 @@ class Interpreter(InterpreterBase):
 
   def _lambda(self):
     lambda_line = self.ip
-    func_info = self.func_manager.get_function_info(FunctionManager.create_lambda_name(self.ip))
     cur_line = self.ip + 1
     while self.indents[cur_line] != self.indents[self.ip]:
       cur_line += 1
     self.ip = cur_line + 1
     captures = self.env_manager.get_current_frame_copy()
-    func_info.captures = captures
-    self._set_result(Value(Type.FUNC, FunctionManager.create_lambda_name(lambda_line)))
+    self._set_result(Value(Type.FUNC, (FunctionManager.create_lambda_name(lambda_line), captures)))
 
   def _endlambda(self):
     self._endfunc()
@@ -333,7 +340,7 @@ class Interpreter(InterpreterBase):
       if args[0] not in self.type_to_default:
         super().error(ErrorType.TYPE_ERROR,f"Invalid type {args[0]}", self.ip)
       # Create the variable with a copy of the default value for the type
-      self.env_manager.set(var_name, copy.copy(self.type_to_default[args[0]]))
+      self.env_manager.set(var_name, copy.deepcopy(self.type_to_default[args[0]]))
 
     self._advance_to_next_statement()
 
@@ -452,23 +459,28 @@ class Interpreter(InterpreterBase):
     if '.' in token:
       lst = token.split('.')
       root_val_type = self.env_manager.get(lst[0])
-      cur_obj = root_val_type.value()
-      cur_val_type = root_val_type
-      for member in lst[1:]:
-        if member not in cur_obj:
-          super().error(ErrorType.NAME_ERROR, f"{member} not in object", self.ip)
-        cur_val_type = cur_obj[member]
-        cur_obj = cur_obj[member].value()
-      return cur_val_type
+      if root_val_type.type() != Type.OBJECT:
+        super().error(ErrorType.TYPE_ERROR, f"object assignment on non-object", self.ip)
+      if lst[1] not in root_val_type.value():
+        super().error(ErrorType.NAME_ERROR, f"{lst[1]} not in object", self.ip)
+      return root_val_type.value()[lst[1]]
+      # cur_obj = root_val_type.value()
+      # cur_val_type = root_val_type
+      # for member in lst[1:]:
+      #   if member not in cur_obj:
+      #     super().error(ErrorType.NAME_ERROR, f"{member} not in object", self.ip)
+      #   cur_val_type = cur_obj[member]
+      #   cur_obj = cur_obj[member].value()
+      # return cur_val_type
 
     # look in environments for variable
     val = self.env_manager.get(token)
     if val != None:
       return val
-    
+
     if self.func_manager.is_function(token):
       return Value(Type.FUNC, token)
-  
+
     # not found
     super().error(ErrorType.NAME_ERROR,f"Unknown variable {token}", self.ip)
 

@@ -20,7 +20,6 @@
     reg num_incs_since_mole = 0;
 
     always @(posedge clk_500) begin
-        score_i = score;
         lo = 250 + (100 - score_i) * 1;
         hi = 250 + (100 - score_i) * 5;
         if (contains_mole) begin
