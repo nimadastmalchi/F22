@@ -175,7 +175,8 @@ class Interpreter(InterpreterBase):
     formal_params = self.func_manager.get_function_info(funcname)
     if formal_params is None:
         #TODO
-        if '.' in funcname:
+        # If funcname is already defined, through a TypeError
+        if '.' in funcname or funcname == InterpreterBase.THIS_DEF:
           super().error(ErrorType.TYPE_ERROR, f"Not a function {funcname}", self.ip)
         else:
           super().error(ErrorType.NAME_ERROR, f"Unknown function name {funcname}", self.ip)

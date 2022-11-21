@@ -1,7 +1,5 @@
 func main void
-  var object x
-
-  assign x.val 42
-  funccall x.blah 52		# name error; x.blah doesn’t exist
+    var object x y
+    assign x.a 10
+    assign y x.a # ?? error
 endfunc
- 
