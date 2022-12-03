@@ -1,3 +1,8 @@
+# Nima Amir Dastmalchi (505320372)
+# Brewin#
+# UCLA CS131 Project 3
+# Nov 22, 2022
+
 import copy
 from enum import Enum
 from env_v3 import EnvironmentManager, SymbolResult
@@ -106,17 +111,9 @@ class Interpreter(InterpreterBase):
      root_value_type = self._get_value(lst[0])
      if root_value_type.type() != Type.OBJECT:
         super().error(ErrorType.TYPE_ERROR, f"object assignment on non-object", self.ip)
-     root_value_type.value()[lst[1]] = self._eval_expression(tokens[1:])
-      #  root_obj = lst[0]
-      #  root_val_type = self._get_value(root_obj)
-      #  if root_val_type.type() != Type.OBJECT:
-      #    super().error(ErrorType.TYPE_ERROR, "Trying to use '.' on non-object", self.ip)
-      #  cur_obj = root_val_type.value()
-      #  for member in lst[1:-1]:
-      #    if member not in cur_obj:
-      #      super().error(ErrorType.NAME_ERROR, f"{member} not in object", self.ip)
-      #    cur_obj = cur_obj[member].value()
-      #  cur_obj[lst[-1]] = self._eval_expression(tokens[1:])
+     val = self._eval_expression(tokens[1:])
+     # Make a copy of the value
+     root_value_type.value()[lst[1]] = Value(val.type(), val.value())
    else:
     value_type = self._eval_expression(tokens[1:])
     existing_value_type = self._get_value(tokens[0])
@@ -175,8 +172,10 @@ class Interpreter(InterpreterBase):
     formal_params = self.func_manager.get_function_info(funcname)
     if formal_params is None:
         #TODO
+
         # If funcname is already defined, through a TypeError
-        if '.' in funcname or funcname == InterpreterBase.THIS_DEF:
+        val = self.env_manager.get(funcname)
+        if '.' in funcname or funcname == InterpreterBase.THIS_DEF or val is not None:
           super().error(ErrorType.TYPE_ERROR, f"Not a function {funcname}", self.ip)
         else:
           super().error(ErrorType.NAME_ERROR, f"Unknown function name {funcname}", self.ip)
@@ -460,6 +459,8 @@ class Interpreter(InterpreterBase):
     if '.' in token:
       lst = token.split('.')
       root_val_type = self.env_manager.get(lst[0])
+      if root_val_type is None:
+        super().error(ErrorType.NAME_ERROR, f"Could not find var", self.ip)
       if root_val_type.type() != Type.OBJECT:
         super().error(ErrorType.TYPE_ERROR, f"object assignment on non-object", self.ip)
       if lst[1] not in root_val_type.value():

@@ -1,3 +1,8 @@
+# Nima Amir Dastmalchi (505320372)
+# Brewin#
+# UCLA CS131 Project 3
+# Nov 22, 2022
+
 from intbase import InterpreterBase, ErrorType
 
 # Tokenzies a program, e.g., "assign var + 5 10" --> ["assign","var","+","5","10"] for each line of the input program

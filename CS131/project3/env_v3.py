@@ -1,3 +1,8 @@
+# Nima Amir Dastmalchi (505320372)
+# Brewin#
+# UCLA CS131 Project 3
+# Nov 22, 2022
+
 from enum import Enum
 import copy
 

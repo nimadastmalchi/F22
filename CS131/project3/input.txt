@@ -1,5 +1,4 @@
 func main void
-    var object x y
-    assign x.a 10
-    assign y x.a # ?? error
+  var object o
+  funccall o
 endfunc
